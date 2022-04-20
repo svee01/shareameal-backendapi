@@ -1,0 +1,23 @@
+{
+  "name": "programmeren4_2021",
+  "version": "1.0.0",
+  "description": "Npm for programming IV",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/p3163/backendserver_shareameal.git"
+  },
+  "keywords": [
+    "Heroku",
+    "Node.js"
+  ],
+  "author": "Sanne v E",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
