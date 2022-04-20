@@ -1,6 +1,12 @@
 const express = require('express');
 const app = express();
-const port = process.enc.PORT || 3000;
+const port = process.env.PORT || 3000;
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
+
+let database = [];
+let id = 0;
 
 // Respond with Hello World! on the homepage:
 
@@ -16,6 +22,19 @@ app.get('/api', (req, res) => {
 
 app.post('/api/user', (req, res) => {
   res.send('new user info');
+  let user = req.body;
+  console.log(user);
+  user = {
+    name,
+    id,
+  }
+
+  database.push(user);
+  console.log(database);
+  res.status(201).json({
+    status: 201,
+    result: user,
+  });
 });
 
 // 202: get all users
