@@ -84,7 +84,7 @@ app.get('/api/user/profile', (req, res) => {
 app.get('/api/user/:id', (req, res) => {
   console.log(req.params.id)
 
-  database.getUserById((error, result) => {
+  database.getUserById(req.params.id, (error, result) => {
     if (error) {
       console.log(`app.js: ${error}`)
       res.status(401).json({
@@ -106,7 +106,9 @@ app.get('/api/user/:id', (req, res) => {
 // 205: update a single user
 
 app.put('/api/user/:id', (req, res) => {
-  database.updateUser((error, result) => {
+  console.log(req.params.id)
+
+  database.updateUser(req.params.id, (error, result) => {
     if (error) {
       console.log(`app.js: ${error}`)
       res.status(401).json({
@@ -127,8 +129,10 @@ app.put('/api/user/:id', (req, res) => {
 
 // 206: delete a user
 
-app.delete('/api/user', (req, res) => {
-  database.deleteUser((error, result) => {
+app.delete('/api/user/:id', (req, res) => {
+  console.log(req.params.id)
+
+  database.deleteUser(req.params.id, (error, result) => {
     if (error) {
       console.log(`app.js: ${error}`)
       res.status(401).json({
