@@ -1,20 +1,8 @@
-// Deze variabelen worden niet geëxporteerd en kunnen dus niet
-// vanuit andere bestanden gewijzigd worden - alleen via de databasefuncties.
-const _moviedb = []
 const _userdb = []
-const timeout = 500 // msec
+const timeout = 500
 let id = 0
-let userId = 0
 
-// Dit is het object dat geexporteerd wordt, en dus in andere JavaScript bestanden geïmporteerd kan worden, via require.
 module.exports = {
-    /**
-     * Maak een nieuwe movie aan in de database. De naam van de movie moet uniek zijn.
-     *
-     * @param {*} user
-     * @param {*} movie De movie die we toevoegen
-     * @param {*} callback De functie die ofwel een error, ofwel een resultaat teruggeeft.
-     */
 
     createUser(user, callback) {
         console.log('createUser called')
@@ -30,7 +18,7 @@ module.exports = {
                 callback(error, undefined)
             } else {
                 const userToAdd = {
-                    id: userId++,
+                    id: id++,
                     ...user,
                 }
                 _userdb.push(userToAdd)
@@ -39,19 +27,10 @@ module.exports = {
         }, timeout)
     },
 
-    /**
-     * Retourneer een lijst van alle movies.
-     * Om alle movies op te halen hebben we geen input param nodig,
-     * dus alleen een callback als parameter.
-     *
-     * @param {*} callback De functie die het resultaat retourneert.
-     */
-
     listUsers(callback) {
         console.log('listUsers called')
 
         setTimeout(() => {
-            // roep de callback aan, zonder error, maar met de hele moviedb als result.
             if (_userdb.length > 0) {
                 callback(undefined, _userdb)
             } else {
@@ -67,79 +46,50 @@ module.exports = {
 
         setTimeout(() => {
             if (
-                _userdb.filter((item) => item.userId === id).length > 0
+                _userdb.filter((item) => item.id === id).length > 0
             ) {
-                let userById = _userdb.filter((item) => item.userId === id)
+                let userById = _userdb.filter((item) => item.id === id)
                 callback(undefined, userById)
             } else {
                 const error = 'A user with this ID does not exist.'
                 console.log(error)
                 callback(error, undefined)
             }
-        }, timeout);
+        }, timeout)
     },
 
-    updateMovie() {
-        
-    },
+    updateUser(id, callback) {
+        console.log('updateUser called')
 
-    deleteMovie() {
-        
-    },
-
-    createMovie(movie, callback) {
-        console.log('createMovie called')
-        // we simuleren hier dat de database query 'lang' duurt, door een setTimeout toe te voegen.
         setTimeout(() => {
-            // de naam van de movie moet uniek zijn.
-            // controleer daarom eerst of er al een movie met die naam in de _moviedb zit.
-            if (
-                movie &&
-                movie.name &&
-                _moviedb.filter((item) => item.name === movie.name).length > 0
-            ) {
-                const error = 'A movie with this name already exists.'
-                console.log(error)
-                // roep de callback functie aan met error als resultaat, en result = undefined.
-                callback(error, undefined)
-            } else {
-                // voeg de id toe aan de movie, in de moveToAdd
-                const movieToAdd = {
-                    id: id++,
-                    ...movie,
+            if (_userdb.length >= id || _userdb.length == id - 1) {
+                let oldUser = _userdb[userById.id]
+                let userById = this.getUserById(id, callback)
+                const newUser = {
+                    oldUser,
+                    ...userById
                 }
-                _moviedb.push(movieToAdd)
-                // roep de callback aan, zonder error, maar met de nieuwe movie als result.
-                callback(undefined, movieToAdd)
+            } else {
+                const error = 'A user with this ID does not exist.'
+                console.log(error)
+                callback(error, undefined)
             }
         }, timeout)
     },
 
-    /**
-     * Retourneer een lijst van alle movies.
-     * Om alle movies op te halen hebben we geen input param nodig,
-     * dus alleen een callback als parameter.
-     *
-     * @param {*} callback De functie die het resultaat retourneert.
-     */
-    listMovies(callback) {
-        console.log('listMovies called')
+    deleteUser(id, callback) {
+        console.log('deleteUser called')
 
         setTimeout(() => {
-            // roep de callback aan, zonder error, maar met de hele moviedb als result.
-            callback(undefined, _moviedb)
+            if (_userdb.length >= id || _userdb.length == id - 1) {
+                let userById = this.getUserById(id, callback)
+                _userdb.splice(userById, 1)
+                console.log(`Deleted user: ${userById}`)
+            } else {
+                const error = 'A user with this ID does not exist.'
+                console.log(error)
+                callback(error, undefined)
+            }
         }, timeout)
-    },
-
-    getMovieById() {
-        // zelf uitwerken
-    },
-
-    updateMovie() {
-        // zelf uitwerken
-    },
-
-    deleteMovie() {
-        // zelf uitwerken
     },
 }
