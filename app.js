@@ -6,8 +6,6 @@ const port = process.env.PORT || 3000
 
 app.use(express.json())
 
-let id = 0
-
 app.all('*', (req, res, next) => {
   const method = req.method
   console.log(`Method ${method} has been called`)
@@ -31,6 +29,7 @@ app.get('/api', (req, res) => {
 // 201: register as a new user
 
 app.post('/api/user', (req, res) => {
+  console.log(req.body)
   
   database.createUser(req.body, (error, result) => {
     if (error) {
@@ -108,7 +107,7 @@ app.get('/api/user/:id', (req, res) => {
 app.put('/api/user/:id', (req, res) => {
   console.log(req.params.id)
 
-  database.updateUser(req.params.id, (error, result) => {
+  database.updateUser(req.body, req.params.id, (error, result) => {
     if (error) {
       console.log(`app.js: ${error}`)
       res.status(401).json({

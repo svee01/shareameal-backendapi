@@ -46,9 +46,9 @@ module.exports = {
 
         setTimeout(() => {
             if (
-                _userdb.filter((item) => item.id === id).length > 0
+                _userdb.filter((item) => item.id == id).length > 0
             ) {
-                let userById = _userdb.filter((item) => item.id === id)
+                let userById = _userdb.filter((item) => item.id == id)
                 callback(undefined, userById)
             } else {
                 const error = 'A user with this ID does not exist.'
@@ -58,21 +58,22 @@ module.exports = {
         }, timeout)
     },
 
-    updateUser(id, callback) {
+    updateUser(user, id, callback) {
         console.log('updateUser called')
 
         setTimeout(() => {
-            if (_userdb.length >= id || _userdb.length == id - 1) {
-                let oldUser = _userdb[userById.id]
-                let userById = this.getUserById(id, callback)
-                const newUser = {
-                    oldUser,
-                    ...userById
-                }
-            } else {
+            const index = _userdb.findIndex((item) => id == item.id)
+
+            if (user.id || index === -1) {
                 const error = 'A user with this ID does not exist.'
                 console.log(error)
                 callback(error, undefined)
+            } else {
+                _userdb[index] = {
+                    ..._userdb[index],
+                    ...user,
+                }
+                callback(undefined, _userdb[index])
             }
         }, timeout)
     },
@@ -85,6 +86,7 @@ module.exports = {
                 let userById = this.getUserById(id, callback)
                 _userdb.splice(userById, 1)
                 console.log(`Deleted user: ${userById}`)
+                callback(undefined, userById)
             } else {
                 const error = 'A user with this ID does not exist.'
                 console.log(error)
