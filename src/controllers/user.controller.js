@@ -34,7 +34,7 @@ module.exports = {
 
     getById: (req, res, next) => {
         const userId = req.params.userId
-        console.log(`Movie met ID ${userId} gezocht`)
+        console.log(`User met ID ${userId} gezocht`)
         let user = database.filter((item) => item.id == userId)
         if (user.length > 0) {
             console.log(user)
@@ -43,10 +43,12 @@ module.exports = {
                 result: user,
             })
         } else {
-            res.status(401).json({
+            const error = {
                 status: 401,
                 result: `User with ID ${userId} not found`,
-            })
+            }
+
+            next(error)
         }
     },
 
@@ -75,6 +77,38 @@ module.exports = {
         })
     },
 
+//   `id` int NOT NULL AUTO_INCREMENT,
+//   `firstName` varchar(255) NOT NULL,
+//   `lastName` varchar(255) NOT NULL,
+//   `isActive` tinyint NOT NULL DEFAULT '1',
+//   `emailAdress` varchar(255) NOT NULL,
+//   `password` varchar(255) NOT NULL,
+//   `phoneNumber` varchar(255) DEFAULT '-',
+//   `roles` set('admin','editor','guest') NOT NULL DEFAULT 'editor,guest',
+//   `street` varchar(255) NOT NULL,
+//   `city` varchar(255) NOT NULL,
+    updateById: (req, res, next) => {
+        console.log('updateById aangeroepen')
+        dbconnection.getConnection(function (err, connection) {
+            if (err) throw err
+            
+            connection.query(
+                `UPDATE user SET firstName = ${req.firstName}, lastName = ${req.lastName}, emailAdress = ${req.emailAdress}, password = ${req.password}, phoneNumber = ${req.phoneNumber}, street = ${req.street}, city = ${req.city} WHERE id = ${req.id};`,
+                function (error, results, fields) {
+                    connection.release()
+
+                    if (error) throw error
+
+                    console.log(`update user ${req.id} successfully!`)
+                    res.status(200).json({
+                        statusCode: 200,
+                        results: results,
+                    })
+                }
+            )
+        })
+    },
+
     // `id` int NOT NULL AUTO_INCREMENT,
     // `firstName` varchar(255) NOT NULL,
     // `lastName` varchar(255) NOT NULL,
@@ -85,22 +119,21 @@ module.exports = {
     // `roles` set('admin','editor','guest') NOT NULL DEFAULT 'editor,guest',
     // `street` varchar(255) NOT NULL,
     // `city` varchar(255) NOT NULL,
-
     validateUser: (req, res, next) => {
         // We krijgen een movie object binnen via de req.body.
         // Dat object splitsen we hier via object decomposition
         // in de afzonderlijke attributen.
-        const { firstName, lastName, emailAdress, password, phoneNumber, street, city } = req.body
+        const { firstName, lastName, street, city, emailAdress, password, phoneNumber } = req.body
         try {
             // assert is een nodejs library om attribuutwaarden te valideren.
             // Bij een true gaan we verder, bij een false volgt een exception die we opvangen.
             assert.equal(typeof firstName, 'string', 'first name must be a string')
             assert.equal(typeof lastName, 'string', 'last name must be a string')
+            assert.equal(typeof street, 'string', 'street address must be a string')
+            assert.equal(typeof city, 'string', 'city address must be a string')
             assert.equal(typeof emailAdress, 'string', 'email address must be a string')
             assert.equal(typeof password, 'string', 'password address must be a string')
             assert.equal(typeof phoneNumber, 'string', 'phone number address must be a string')
-            assert.equal(typeof street, 'string', 'street address must be a string')
-            assert.equal(typeof city, 'string', 'city address must be a string')
             // als er geen exceptions waren gaan we naar de next routehandler functie.
             next()
         } catch (err) {
@@ -112,10 +145,12 @@ module.exports = {
             // via de Express errorhandler te doen; dan heb je één plek waar je
             // alle errors afhandelt.
             // zie de Express handleiding op https://expressjs.com/en/guide/error-handling.html
-            res.status(400).json({
+            const error = {
                 statusCode: 400,
                 error: err.message,
-            })
+            }
+
+            next(error)
         }
     },
 }

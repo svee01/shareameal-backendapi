@@ -24,6 +24,10 @@ app.all('*', (req, res) => {
 })
 
 // hier express errorhandler toevoegen
+app.use((err, req, res, next) => {
+  console.error(err.stack)
+  res.status(err.status).json(err)
+})
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

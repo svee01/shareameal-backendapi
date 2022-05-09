@@ -35,7 +35,7 @@ const INSERT_MEALS =
     "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
 
-describe('Movies API', () => {
+describe('Users', () => {
     //
     // informatie over before, after, beforeEach, afterEach:
     // https://mochajs.org/#hooks
@@ -48,7 +48,7 @@ describe('Movies API', () => {
         done()
     })
 
-    describe('UC201 Create movie', () => {
+    describe('UC201 Create user', () => {
         //
         beforeEach((done) => {
             console.log('beforeEach called')
@@ -73,6 +73,7 @@ describe('Movies API', () => {
             })
         })
 
+        // Gebruiker is niet toegevoegd in het systeem. Responsestatus HTTP code 400 (Foute aanvraag) Response bevat JSON object met daarin generieke foutinformatie.
         it('TC-201-1 should return valid error when required value is not present', (done) => {
             chai.request(server)
                 .post('/api/movie')
@@ -100,12 +101,247 @@ describe('Movies API', () => {
                 })
         })
 
-        it('TC-201-2 should return a valid error when postal code is invalid', (done) => {
-            // Zelf verder aanvullen
+        it('TC-201-2 should return a valid error when email is invalid', (done) => {
+            
             done()
         })
 
-        // En hier komen meer testcases
+        it ('TC-201-3 should return a valid error when password is invalid', (done) => {
+
+            done()
+        })
+
+        it ('TC-201-4 should return a valid error when a user already exists', (done) => {
+
+            done()
+        })
+
+        // Gebruiker is toegevoegd in het systeem. Responsestatus HTTP code 200 Response bevat JSON object met daarin volledige gebruikersnaam en het gegenereerde token.
+        it ('TC-201-5 should add users to the database', (done) => {
+
+            done()
+        })
+    })
+
+    describe('UC-202 showing users', () => {
+        beforeEach((done) => {
+            console.log('beforeEach called')
+
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err
+                connection.query(
+                    CLEAR_DB + INSERT_USER,
+                    function (error, results, fields) {
+                        connection.release()
+                        if (error) throw error
+                        console.log('beforeEach done')
+                        done()
+                    }
+                )
+            })
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met lege lijst.
+        it ('TC-202-1 show 0 users', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van twee gebruikers.
+        it ('TC-202-2 show 2 users', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met nul gebruikers.
+        it ('TC-202-3 show users on search term of nonexistent name', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
+        it ('TC-202-4 show users by using search term on the field active=false', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
+        it ('TC-202-5 show users by using search term on the field active=true', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
+        it ('TC-202-6 show users on search term of existent name', (done) => {
+
+            done()
+        })
+    })
+
+    describe('UC-203 request personal user profile', () => {
+        beforeEach((done) => {
+            console.log('beforeEach called')
+
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err
+                connection.query(
+                    CLEAR_DB + INSERT_USER,
+                    function (error, results, fields) {
+                        connection.release()
+                        if (error) throw error
+                        console.log('beforeEach done')
+                        done()
+                    }
+                )
+            })
+        })
+
+        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-203-1 invalid token', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
+        it ('TC-203-2 valid token and user exists', (done) => {
+
+            done()
+        })
+    })
+
+    describe('UC-204 details of a user', () => {
+        beforeEach((done) => {
+            console.log('beforeEach called')
+
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err
+                connection.query(
+                    CLEAR_DB + INSERT_USER,
+                    function (error, results, fields) {
+                        connection.release()
+                        if (error) throw error
+                        console.log('beforeEach done')
+                        done()
+                    }
+                )
+            })
+        })
+
+        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-204-1 invalid token', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-204-2 user id doesnt exist', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
+        it ('TC-204-3 user id exists', (done) => {
+
+            done()
+        })
+    })
+
+    describe('UC-205 updating a user', () => {
+        beforeEach((done) => {
+            console.log('beforeEach called')
+
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err
+                connection.query(
+                    CLEAR_DB + INSERT_USER,
+                    function (error, results, fields) {
+                        connection.release()
+                        if (error) throw error
+                        console.log('beforeEach done')
+                        done()
+                    }
+                )
+            })
+        })
+
+        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-205-1 required field is missing', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-205-2 invalid postal code', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-205-3 invalid phone number', (done) => {
+
+            done()
+        })
+
+        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-205-4 user doesnt exist', (done) => {
+
+            done()
+        })
+
+        // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-205-5 not logged in', (done) => {
+
+            done()
+        })
+
+        // Gebruiker gewijzigd in database Responsestatus HTTP code 200 (OK) Response bevat JSON object met alle gegevens van de gebruiker.
+        it ('TC-205-6 user successfully updated', (done) => {
+
+            done()
+        })
+    })
+
+    describe('UC-206 deleting a user', () => {
+        beforeEach((done) => {
+            console.log('beforeEach called')
+
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err
+                connection.query(
+                    CLEAR_DB + INSERT_USER,
+                    function (error, results, fields) {
+                        connection.release()
+                        if (error) throw error
+                        console.log('beforeEach done')
+                        done()
+                    }
+                )
+            })
+        })
+
+        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-206-1 user doesnt exist', (done) => {
+
+            done()
+        })
+
+        // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-206-2 not logged in', (done) => {
+
+            done()
+        })
+
+        // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
+        it ('TC-206-3 actor is not the owner', (done) => {
+
+            done()
+        })
+
+        // Gebruiker verwijderd uit database Responsestatus HTTP code 200 (OK)
+        it ('TC-206-4 user successfully deleted', (done) => {
+
+            done()
+        })
     })
 
     describe('UC-303 Lijst van maaltijden opvragen /api/meal', () => {
