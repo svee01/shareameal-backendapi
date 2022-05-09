@@ -17,6 +17,6 @@ router.get('/user/:id', userController.getById)
 // 205 update a single user by id
 router.put('/user/:id', userController.updateById)
 // 206 delete a user
-router.delete('/user/:id')
+router.delete('/user/:id', userController.deleteById)
 
 module.exports = router

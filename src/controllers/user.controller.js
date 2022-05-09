@@ -16,11 +16,15 @@ module.exports = {
         // We geven in de createMovie functie de callbackfunctie mee. Die kan een error of een result teruggeven.
         database.createUser(req.body, (error, result) => {
             if (error) {
-                console.log(`app.js : ${error}`)
-                res.status(401).json({
-                    statusCode: 401,
-                    error, // als de key en de value het zelfde kun je die zo vermelden. Hier staat eigenlijk: error: error
-                })
+                console.log(`Error message: ${err.message}`)
+                console.log(`Error code: ${err.code}`)
+
+                const error = {
+                    statusCode: 400,
+                    error: err.message,
+                }
+
+                next(error)
             }
             if (result) {
                 console.log(`app.js: movie successfully added!`)
@@ -43,6 +47,9 @@ module.exports = {
                 result: user,
             })
         } else {
+            console.log(`Error message: ${err.message}`)
+            console.log(`Error code: ${err.code}`)
+            
             const error = {
                 status: 401,
                 result: `User with ID ${userId} not found`,
@@ -55,25 +62,37 @@ module.exports = {
     getAll: (req, res, next) => {
         console.log('getAll aangeroepen')
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err // not connected!
+            // if (err) throw err // not connected!
             // Use the connection
-            connection.query(
-                'SELECT id, firstName, lastName FROM user;',
-                function (error, results, fields) {
-                    // When done with the connection, release it.
-                    connection.release()
+            try {
+                connection.query(
+                    'SELECT id, firstName, lastName FROM user;',
+                    function (error, results, fields) {
+                        // When done with the connection, release it.
+                        connection.release()
+    
+                        // Handle error after the release.
+                        if (error) throw error
+    
+                        // Don't use the connection here, it has been returned to the pool.
+                        console.log('#results = ', results.length)
+                        res.status(200).json({
+                            statusCode: 200,
+                            results: results,
+                        })
+                    }
+                )
+            } catch (err) {
+                console.log(`Error message: ${err.message}`)
+                console.log(`Error code: ${err.code}`)
 
-                    // Handle error after the release.
-                    if (error) throw error
-
-                    // Don't use the connection here, it has been returned to the pool.
-                    console.log('#results = ', results.length)
-                    res.status(200).json({
-                        statusCode: 200,
-                        results: results,
-                    })
+                const error = {
+                    statusCode: 400,
+                    error: err.message,
                 }
-            )
+
+                next(error)
+            }
         })
     },
 
@@ -90,10 +109,43 @@ module.exports = {
     updateById: (req, res, next) => {
         console.log('updateById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
+            // if (err) throw err
+            try {
+                connection.query(
+                    `UPDATE user SET firstName = ${req.firstName}, lastName = ${req.lastName}, emailAdress = ${req.emailAdress}, password = ${req.password}, phoneNumber = ${req.phoneNumber}, street = ${req.street}, city = ${req.city} WHERE id = ${req.id};`,
+                    function (error, results, fields) {
+                        connection.release()
+    
+                        if (error) throw error
+    
+                        console.log(`update user ${req.id} successfully!`)
+                        res.status(200).json({
+                            statusCode: 200,
+                            results: results,
+                        })
+                    }
+                )
+            } catch (err) {
+                console.log(`Error message: ${err.message}`)
+                console.log(`Error code: ${err.code}`)
+
+                const error = {
+                    statusCode: 400,
+                    error: err.message,
+                }
+
+                next(error)
+            }
+        })
+    },
+
+    deleteById: (req, res, next) => {
+        console.log('deleteById aangeroepen')
+        dbconnection.getConnection(function (err, connection) {
             if (err) throw err
             
             connection.query(
-                `UPDATE user SET firstName = ${req.firstName}, lastName = ${req.lastName}, emailAdress = ${req.emailAdress}, password = ${req.password}, phoneNumber = ${req.phoneNumber}, street = ${req.street}, city = ${req.city} WHERE id = ${req.id};`,
+                `DELETE FROM user WHERE id = ${req.id};`,
                 function (error, results, fields) {
                     connection.release()
 
