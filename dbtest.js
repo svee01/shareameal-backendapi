@@ -10,17 +10,19 @@ const pool = mysql.createPool({
     database : process.env.DB_DATABASE,
 })
 
-pool.getConnection(function(err, connection) {
-    if (err) throw err
+module.exports = pool
 
-    connection.query('SELECT id, name FROM meal;', function(error, results, fields) {
-        connection.release()
+// pool.getConnection(function(err, connection) {
+//     if (err) throw err
 
-        if (error) throw error
-        console.log('Result = ', results)
+//     connection.query('SELECT id, name FROM meal;', function(error, results, fields) {
+//         connection.release()
 
-        pool.end((err) => {
-            console.log('Pool was closed.')
-        })
-    })
-})
+//         if (error) throw error
+//         console.log('Result = ', results)
+
+//         pool.end((err) => {
+//             console.log('Pool was closed.')
+//         })
+//     })
+// })

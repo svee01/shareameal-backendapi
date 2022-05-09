@@ -56,7 +56,7 @@ module.exports = {
             if (err) throw err // not connected!
             // Use the connection
             connection.query(
-                'SELECT id, firstName, lastName FROM user;',
+                'SELECT * FROM user;',
                 function (error, results, fields) {
                     // When done with the connection, release it.
                     connection.release()
@@ -90,7 +90,7 @@ module.exports = {
         // We krijgen een movie object binnen via de req.body.
         // Dat object splitsen we hier via object decomposition
         // in de afzonderlijke attributen.
-        const { firstName, lastName, emailAdress, password, phoneNumber, street, city } = req.body
+        const { firstName, lastName, emailAdress, password, street, city } = req.body
         try {
             // assert is een nodejs library om attribuutwaarden te valideren.
             // Bij een true gaan we verder, bij een false volgt een exception die we opvangen.
@@ -98,7 +98,6 @@ module.exports = {
             assert.equal(typeof lastName, 'string', 'last name must be a string')
             assert.equal(typeof emailAdress, 'string', 'email address must be a string')
             assert.equal(typeof password, 'string', 'password address must be a string')
-            assert.equal(typeof phoneNumber, 'string', 'phone number address must be a string')
             assert.equal(typeof street, 'string', 'street address must be a string')
             assert.equal(typeof city, 'string', 'city address must be a string')
             // als er geen exceptions waren gaan we naar de next routehandler functie.
