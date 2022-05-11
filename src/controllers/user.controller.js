@@ -170,10 +170,10 @@ module.exports = {
         try {
             assert.equal(typeof firstName, 'string', 'first name must be a string')
             assert.equal(typeof lastName, 'string', 'last name must be a string')
-            assert.equal(typeof street, 'string', 'street address must be a string')
-            assert.equal(typeof city, 'string', 'city address must be a string')
+            assert.equal(typeof street, 'string', 'street must be a string')
+            assert.equal(typeof city, 'string', 'city must be a string')
             assert.equal(typeof emailAdress, 'string', 'email address must be a string')
-            assert.equal(typeof password, 'string', 'password address must be a string')
+            assert.equal(typeof password, 'string', 'password must be a string')
             assert.equal(typeof isActive, 'number', 'is active must be a number')
             assert.equal(typeof phoneNumber, 'string', 'phone number must be a string')
             next()

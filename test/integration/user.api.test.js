@@ -77,12 +77,14 @@ describe('Users', () => {
             chai.request(server)
                 .post('/api/user')
                 .send({
-                    // firstName: "John",
-                    lastName: "Doe",
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
                     street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "j.doe@server.com"
+                    // emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
                     assert.ifError(err)
@@ -107,9 +109,11 @@ describe('Users', () => {
             chai.request(server)
                 .post('/api/user')
                 .send({
-                    firstName: "John",
-                    lastName: "Doe",
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
                     street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
                     emailAdress: 1234
@@ -137,12 +141,14 @@ describe('Users', () => {
             chai.request(server)
                 .post('/api/user')
                 .send({
-                    firstName: "John",
-                    lastName: "Doe",
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
                     street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
                     city: "Breda",
                     password: 1234,
-                    emailAdress: "j.doe@server.com"
+                    emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
                     assert.ifError(err)
@@ -167,24 +173,28 @@ describe('Users', () => {
             chai.request(server)
                 .post('/api/user')
                 .send({
-                    firstName: "John",
-                    lastName: "Doe",
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
                     street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "j.doe@server.com"
+                    emailAdress: "random@gmail.com"
                 },
                 {
-                    firstName: "John",
-                    lastName: "Doe",
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
                     street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "j.doe@server.com"
+                    emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(400)
+                    res.should.have.status(500)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -206,12 +216,14 @@ describe('Users', () => {
             chai.request(server)
                 .post('/api/user')
                 .send({
-                    firstName: "John",
-                    lastName: "Doe",
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
                     street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "j.doe@server.com"
+                    emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
                     res.should.have.status(200)
@@ -271,20 +283,24 @@ describe('Users', () => {
             chai.request(server)
             .post('/api/user')
             .send({
-                firstName: "John",
-                lastName: "Doe",
+                firstName: "Milan",
+                lastName: "Knol",
+                isActive: 1,
                 street: "Lovensdijkstraat 61",
+                phoneNumber: "0612345678",
                 city: "Breda",
                 password: "secret",
-                emailAdress: "j.doe@server.com"
+                emailAdress: "random@gmail.com"
             },
             {
                 firstName: "Lisa",
                 lastName: "Lol",
+                isActive: 1,
                 street: "Lovensdijkstraat 61",
+                phoneNumber: "0612345678",
                 city: "Breda",
                 password: "secret",
-                emailAdress: "l.lol@server.com"
+                emailAdress: "l.lol@gmail.com"
             })
             .end((err, res) => {
                 res.should.have.status(200)
@@ -466,12 +482,14 @@ describe('Users', () => {
         it ('TC-205-1 required field is missing', (done) => {
             chai.request(server)
             .put('/api/user/1', {
-                firstName: "John",
-                lastName: "Doe",
+                firstName: "Milan",
+                lastName: "Knol",
+                isActive: 1,
                 street: "Lovensdijkstraat 61",
+                phoneNumber: "0612345678",
                 city: "Breda",
-                // password: "secret",
-                emailAdress: "j.doe@server.com"
+                password: "secret",
+                emailAdress: "random@gmail.com"
             })
             .end((err, res) => {
                 assert.ifError(err)
@@ -537,12 +555,14 @@ describe('Users', () => {
         it ('TC-205-6 user successfully updated', (done) => {
             chai.request(server)
             .put('/api/user/1', {
-                firstName: "John",
-                lastName: "Doe",
+                firstName: "Milan",
+                lastName: "Knol",
+                isActive: 1,
                 street: "Lovensdijkstraat 61",
+                phoneNumber: "0612345678",
                 city: "Breda",
                 password: "secret",
-                emailAdress: "j.doe@server.com"
+                emailAdress: "random@gmail.com"
             })
             .end((err, res) => {
                 res.should.have.status(200)
