@@ -11,7 +11,7 @@ chai.should()
 chai.use(chaiHttp)
 
 /**
- * Db queries to clear and fill the test database before each test.
+ * Db queries to clear and fill the test database before each test. --test
  */
 const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;'
 const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;'
