@@ -175,7 +175,7 @@ module.exports = {
         // We krijgen een movie object binnen via de req.body.
         // Dat object splitsen we hier via object decomposition
         // in de afzonderlijke attributen.
-        const { firstName, lastName, street, city, emailAdress, password, phoneNumber } = req.body
+        const { firstName, lastName, street, city, emailAdress, password } = req.body
         try {
             // assert is een nodejs library om attribuutwaarden te valideren.
             // Bij een true gaan we verder, bij een false volgt een exception die we opvangen.
@@ -185,7 +185,7 @@ module.exports = {
             assert.equal(typeof city, 'string', 'city address must be a string')
             assert.equal(typeof emailAdress, 'string', 'email address must be a string')
             assert.equal(typeof password, 'string', 'password address must be a string')
-            assert.equal(typeof phoneNumber, 'string', 'phone number address must be a string')
+            // assert.equal(typeof phoneNumber, 'string', 'phone number address must be a string')
             // als er geen exceptions waren gaan we naar de next routehandler functie.
             next()
         } catch (err) {
