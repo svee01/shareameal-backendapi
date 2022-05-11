@@ -560,16 +560,10 @@ describe('Users', () => {
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode', 'firstName', 'lastName', 'street', 'city', 'password', 'emailAdress')
+                    .that.has.all.keys('statusCode')
 
-                let { statusCode, firstName, lastName, street, city, password, emailAdress } = res.body
+                let { statusCode } = res.body
                 statusCode.should.be.an('number')
-                firstName.should.be.an('string')
-                lastName.should.be.an('string')
-                street.should.be.an('string')
-                city.should.be.an('string')
-                password.should.be.an('string')
-                emailAdress.should.be.an('string')
 
                 done()
             })

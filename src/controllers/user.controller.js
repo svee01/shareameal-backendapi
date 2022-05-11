@@ -2,20 +2,28 @@ const database = require('../../database/inmemdb')
 const dbconnection = require('../../database/dbconnection')
 const assert = require('assert')
 
-/**
- * We exporteren hier een object. Dat object heeft attributen met een waarde.
- * Die waarde kan een string, number, boolean, array, maar ook een functie zijn.
- * In dit geval zijn de attributen functies.
- */
 module.exports = {
-    // createMovie is een attribuut dat als waarde een functie heeft.
+    // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     createUser: (req, res, next) => {
-        // Hier gebruiken we nu de inmem database module om een movie toe te voegen.
-        // Optie: check vooraf of req.body wel de juiste properties/attribute bevat - gaan we later doen
+        console.log('createUser aangeroepen')
+        dbconnection.getConnection(function (err, connection) {
+            if (err) throw err
 
-        // We geven in de createMovie functie de callbackfunctie mee. Die kan een error of een result teruggeven.
-        database.createUser(req.body, (error, result) => {
-            if (error) {
+            try {
+                connection.query(
+                    `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`,
+                    function (error, results, fields) {
+                        connection.release()
+
+                        if (error) throw error
+
+                        res.status(200).json({
+                            statusCode: 200,
+                            results: results,
+                        })
+                    }
+                )
+            } catch (err) {
                 console.log(`Error message: ${err.message}`)
                 console.log(`Error code: ${err.code}`)
 
@@ -26,55 +34,56 @@ module.exports = {
 
                 next(error)
             }
-            if (result) {
-                console.log(`app.js: movie successfully added!`)
-                res.status(200).json({
-                    statusCode: 200,
-                    result,
-                })
-            }
         })
     },
 
     getById: (req, res, next) => {
         const userId = req.params.userId
         console.log(`User met ID ${userId} gezocht`)
-        let user = database.filter((item) => item.id == userId)
-        if (user.length > 0) {
-            console.log(user)
-            res.status(200).json({
-                status: 200,
-                result: user,
-            })
-        } else {
-            console.log(`Error message: ${err.message}`)
-            console.log(`Error code: ${err.code}`)
-            
-            const error = {
-                status: 401,
-                result: `User with ID ${userId} not found`,
-            }
+        dbconnection.getConnection(function (err, connection) {
+            if (err) throw err
 
-            next(error)
-        }
+            try {
+                connection.query(
+                    `SELECT * FROM user WHERE id = ${userId};`,
+                    function (error, results, fields) {
+                        connection.release()
+
+                        if (error) throw error
+
+                        res.status(200).json({
+                            statusCode: 200,
+                            results: results,
+                        })
+                    }
+                )
+            } catch (err) {
+                console.log(`Error message: ${err.message}`)
+                console.log(`Error code: ${err.code}`)
+
+                const error = {
+                    statusCode: 400,
+                    error: err.message,
+                }
+
+                next(error)
+            }
+        })
     },
 
     getAll: (req, res, next) => {
         console.log('getAll aangeroepen')
         dbconnection.getConnection(function (err, connection) {
-            // if (err) throw err // not connected!
-            // Use the connection
+            if (err) throw err
+
             try {
                 connection.query(
                     'SELECT id, firstName, lastName FROM user;',
                     function (error, results, fields) {
-                        // When done with the connection, release it.
                         connection.release()
     
-                        // Handle error after the release.
                         if (error) throw error
     
-                        // Don't use the connection here, it has been returned to the pool.
                         console.log('#results = ', results.length)
                         res.status(200).json({
                             statusCode: 200,
@@ -96,29 +105,22 @@ module.exports = {
         })
     },
 
-//   `id` int NOT NULL AUTO_INCREMENT,
-//   `firstName` varchar(255) NOT NULL,
-//   `lastName` varchar(255) NOT NULL,
-//   `isActive` tinyint NOT NULL DEFAULT '1',
-//   `emailAdress` varchar(255) NOT NULL,
-//   `password` varchar(255) NOT NULL,
-//   `phoneNumber` varchar(255) DEFAULT '-',
-//   `roles` set('admin','editor','guest') NOT NULL DEFAULT 'editor,guest',
-//   `street` varchar(255) NOT NULL,
-//   `city` varchar(255) NOT NULL,
+    // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     updateById: (req, res, next) => {
+        let userId = req.params.id
         console.log('updateById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
-            // if (err) throw err
+            if (err) throw err
+
             try {
                 connection.query(
-                    `UPDATE user SET firstName = ${req.firstName}, lastName = ${req.lastName}, emailAdress = ${req.emailAdress}, password = ${req.password}, phoneNumber = ${req.phoneNumber}, street = ${req.street}, city = ${req.city} WHERE id = ${req.id};`,
+                    `UPDATE user SET firstName = "${req.body.firstName}", lastName = "${req.body.lastName}", isActive = ${req.body.isActive}, emailAdress = "${req.body.emailAdress}", password = "${req.body.password}", phoneNumber = "${req.body.phoneNumber}", street = "${req.body.street}", city = "${req.body.city}" WHERE id = "${req.body.id}";`,
                     function (error, results, fields) {
                         connection.release()
     
                         if (error) throw error
     
-                        console.log(`update user ${req.id} successfully!`)
+                        console.log(`updated user ${userId} successfully!`)
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
@@ -140,18 +142,19 @@ module.exports = {
     },
 
     deleteById: (req, res, next) => {
+        let userId = req.params.id
         console.log('deleteById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
             
             connection.query(
-                `DELETE FROM user WHERE id = ${req.id};`,
+                `DELETE FROM user WHERE id = ${userId};`,
                 function (error, results, fields) {
                     connection.release()
 
                     if (error) throw error
 
-                    console.log(`update user ${req.id} successfully!`)
+                    console.log(`deleted user ${userId} successfully!`)
                     res.status(200).json({
                         statusCode: 200,
                         results: results,
@@ -161,41 +164,22 @@ module.exports = {
         })
     },
 
-    // `id` int NOT NULL AUTO_INCREMENT,
-    // `firstName` varchar(255) NOT NULL,
-    // `lastName` varchar(255) NOT NULL,
-    // `isActive` tinyint NOT NULL DEFAULT '1',
-    // `emailAdress` varchar(255) NOT NULL,
-    // `password` varchar(255) NOT NULL,
-    // `phoneNumber` varchar(255) DEFAULT '-',
-    // `roles` set('admin','editor','guest') NOT NULL DEFAULT 'editor,guest',
-    // `street` varchar(255) NOT NULL,
-    // `city` varchar(255) NOT NULL,
+    // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     validateUser: (req, res, next) => {
-        // We krijgen een movie object binnen via de req.body.
-        // Dat object splitsen we hier via object decomposition
-        // in de afzonderlijke attributen.
         const { firstName, lastName, street, city, emailAdress, password } = req.body
         try {
-            // assert is een nodejs library om attribuutwaarden te valideren.
-            // Bij een true gaan we verder, bij een false volgt een exception die we opvangen.
             assert.equal(typeof firstName, 'string', 'first name must be a string')
             assert.equal(typeof lastName, 'string', 'last name must be a string')
             assert.equal(typeof street, 'string', 'street address must be a string')
             assert.equal(typeof city, 'string', 'city address must be a string')
             assert.equal(typeof emailAdress, 'string', 'email address must be a string')
             assert.equal(typeof password, 'string', 'password address must be a string')
-            // assert.equal(typeof phoneNumber, 'string', 'phone number address must be a string')
-            // als er geen exceptions waren gaan we naar de next routehandler functie.
+            assert.equal(typeof isActive, 'number', 'is active must be a number')
+            assert.equal(typeof phoneNumber, 'string', 'phone number must be a string')
             next()
         } catch (err) {
-            // Hier kom je als een assert failt.
             console.log(`Error message: ${err.message}`)
             console.log(`Error code: ${err.code}`)
-            // Hier geven we een generiek errorobject terug. Dat moet voor alle
-            // foutsituaties dezelfde structuur hebben. Het is nog mooier om dat
-            // via de Express errorhandler te doen; dan heb je één plek waar je
-            // alle errors afhandelt.
             // zie de Express handleiding op https://expressjs.com/en/guide/error-handling.html
             const error = {
                 statusCode: 400,
