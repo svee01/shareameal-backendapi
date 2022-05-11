@@ -24,7 +24,9 @@ const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
  */
 const INSERT_USER =
     'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-    '(1, "first", "last", "name@server.nl", "secret", "street", "city");'
+    '(1, "first", "last", "name@server.nl", "secret", "street", "city");' +
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(1, "first", "last", "random@server.nl", "secret", "street", "city");'
 
 /**
  * Query om twee meals toe te voegen. Let op de UserId, die moet matchen
@@ -49,22 +51,19 @@ describe('Users', () => {
     })
 
     describe('UC201 Create user', () => {
-        //
+        
         beforeEach((done) => {
             console.log('beforeEach called')
-            // maak de testdatabase leeg zodat we onze testen kunnen uitvoeren.
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err // not connected!
+                if (err) throw err
 
-                // Use the connection
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        // When done with the connection, release it.
                         connection.release()
-                        // Handle error after the release.
+
                         if (error) throw error
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
+                        
                         console.log('beforeEach done')
                         done()
                     }
@@ -281,27 +280,7 @@ describe('Users', () => {
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van twee gebruikers.
         it ('TC-202-2 show 2 users', (done) => {
             chai.request(server)
-            .post('/api/user')
-            .send({
-                firstName: "Milan",
-                lastName: "Knol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: "0612345678",
-                city: "Breda",
-                password: "secret",
-                emailAdress: "random@gmail.com"
-            },
-            {
-                firstName: "Lisa",
-                lastName: "Lol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: "0612345678",
-                city: "Breda",
-                password: "secret",
-                emailAdress: "l.lol@gmail.com"
-            })
+            .get('/api/user')
             .end((err, res) => {
                 res.should.have.status(200)
                 res.should.be.an('object')
@@ -423,20 +402,20 @@ describe('Users', () => {
             .get('/api/user/50')
             .end((err, res) => {
                 assert.ifError(err)
-                    res.should.have.status(404)
-                    res.should.be.an('object')
+                res.should.have.status(404)
+                res.should.be.an('object')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'error')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'error')
 
-                    let { statusCode, error } = res.body
-                    statusCode.should.be.an('number')
-                    error.should.be
-                        .an('string')
-                        .that.contains('not found')
+                let { statusCode, error } = res.body
+                statusCode.should.be.an('number')
+                error.should.be
+                    .an('string')
+                    .that.contains('not found')
 
-                    done()
+                done()
             })
         })
 
@@ -450,9 +429,9 @@ describe('Users', () => {
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode')
+                    .that.has.all.keys('statusCode', 'results')
 
-                let { statusCode } = res.body
+                let { statusCode, results } = res.body
                 statusCode.should.be.an('number')
 
                 done()
@@ -482,7 +461,7 @@ describe('Users', () => {
         it ('TC-205-1 required field is missing', (done) => {
             chai.request(server)
             .put('/api/user/0', {
-                firstName: "Milan",
+                // firstName: "Milan",
                 lastName: "Knol",
                 isActive: 1,
                 street: "Lovensdijkstraat 61",
@@ -504,7 +483,7 @@ describe('Users', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('field')
+                        .that.contains('first name must be')
 
                     done()
             })

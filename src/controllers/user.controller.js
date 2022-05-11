@@ -51,6 +51,18 @@ module.exports = {
 
                         if (error) throw error
 
+                        if (results.body.length == 0) {
+                            console.log(`Error message: ${err.message}`)
+                            console.log(`Error code: ${err.code}`)
+
+                            const error = {
+                                statusCode: 404,
+                                error: err.message,
+                            }
+
+                            next(error)
+                        }
+
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
