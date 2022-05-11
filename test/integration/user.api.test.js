@@ -23,10 +23,10 @@ const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
  * Deze id kun je als foreign key gebruiken in de andere queries, bv insert studenthomes.
  */
 const INSERT_USER =
-    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-    '(1, "first", "last", "name@server.nl", "secret", "street", "city");' +
-    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-    '(1, "first", "last", "random@server.nl", "secret", "street", "city");'
+    'INSERT INTO `user` (`firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '("first", "last", "name@server.nl", "secret", "street", "city");' +
+    'INSERT INTO `user` (`firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '("first", "last", "random@server.nl", "secret", "street", "city");'
 
 /**
  * Query om twee meals toe te voegen. Let op de UserId, die moet matchen
