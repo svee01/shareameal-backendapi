@@ -86,7 +86,7 @@ describe('Users', () => {
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(400)
+                    res.should.have.status(500)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -116,7 +116,7 @@ describe('Users', () => {
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(400)
+                    res.should.have.status(500)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -147,7 +147,7 @@ describe('Users', () => {
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(400)
+                    res.should.have.status(500)
                     res.should.be.an('object')
 
                     res.body.should.be
