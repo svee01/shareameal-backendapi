@@ -23,10 +23,10 @@ app.all('*', (req, res) => {
   })
 })
 
-// hier express errorhandler toevoegen
 app.use((err, req, res, next) => {
+  const status = err.status || 500
   console.error(err.stack)
-  res.status(err.status).json(err)
+  res.status(status).json(err)
 })
 
 app.listen(port, () => {

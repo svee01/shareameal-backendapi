@@ -166,7 +166,7 @@ module.exports = {
 
     // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     validateUser: (req, res, next) => {
-        const { firstName, lastName, street, city, emailAdress, password } = req.body
+        const { firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city } = req.body
         try {
             assert.equal(typeof firstName, 'string', 'first name must be a string')
             assert.equal(typeof lastName, 'string', 'last name must be a string')
