@@ -23,10 +23,10 @@ const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
  * Deze id kun je als foreign key gebruiken in de andere queries, bv insert studenthomes.
  */
 const INSERT_USER =
-    'INSERT INTO `user` (`firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-    '("first", "last", "name@server.nl", "secret", "street", "city");' +
-    'INSERT INTO `user` (`firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-    '("first", "last", "random@server.nl", "secret", "street", "city");'
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(1, "first", "last", "name@server.nl", "secret", "street", "city");' +
+    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    '(2, "first", "last", "random@server.nl", "secret", "street", "city");'
 
 /**
  * Query om twee meals toe te voegen. Let op de UserId, die moet matchen
@@ -87,7 +87,7 @@ describe('Users', () => {
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(500)
+                    res.should.have.status(400)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -119,7 +119,7 @@ describe('Users', () => {
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(500)
+                    res.should.have.status(400)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -151,7 +151,7 @@ describe('Users', () => {
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(500)
+                    res.should.have.status(400)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -179,21 +179,11 @@ describe('Users', () => {
                     phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "random@gmail.com"
-                },
-                {
-                    firstName: "Milan",
-                    lastName: "Knol",
-                    isActive: 1,
-                    street: "Lovensdijkstraat 61",
-                    phoneNumber: "0612345678",
-                    city: "Breda",
-                    password: "secret",
-                    emailAdress: "random@gmail.com"
+                    emailAdress: "name@server.nl"
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(500)
+                    res.should.have.status(400)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -204,7 +194,7 @@ describe('Users', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('duplicate')
+                        .that.contains('already exists')
 
                     done()
                 })
@@ -285,15 +275,14 @@ describe('Users', () => {
                 res.should.have.status(200)
                 res.should.be.an('object')
 
-                res.body.length.should.be
-                    .equal(2)
-
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode')
+                    .that.has.all.keys('statusCode', 'results')
 
-                let { statusCode, error } = res.body
+                let { statusCode, results } = res.body
                 statusCode.should.be.an('number')
+                results.should.be.an('array')
+                    .that.has.lengthOf(2)
 
                 done()
             })
@@ -401,8 +390,8 @@ describe('Users', () => {
             chai.request(server)
             .get('/api/user/50')
             .end((err, res) => {
+                console.log(res.body)
                 assert.ifError(err)
-                res.should.have.status(404)
                 res.should.be.an('object')
 
                 res.body.should.be
@@ -413,7 +402,7 @@ describe('Users', () => {
                 statusCode.should.be.an('number')
                 error.should.be
                     .an('string')
-                    .that.contains('not found')
+                    .that.contains('does not exist')
 
                 done()
             })
@@ -471,6 +460,8 @@ describe('Users', () => {
                 emailAdress: "random@gmail.com"
             })
             .end((err, res) => {
+                console.log(res.status)
+                console.log(res.body)
                 assert.ifError(err)
                     res.should.have.status(400)
                     res.should.be.an('object')
@@ -518,7 +509,7 @@ describe('Users', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('not found')
+                        .that.contains('does not exist')
 
                     done()
             })
@@ -533,7 +524,8 @@ describe('Users', () => {
         // Gebruiker gewijzigd in database Responsestatus HTTP code 200 (OK) Response bevat JSON object met alle gegevens van de gebruiker.
         it ('TC-205-6 user successfully updated', (done) => {
             chai.request(server)
-            .put('/api/user/1', {
+            .put('/api/user/1')
+            .send({
                 firstName: "Milan",
                 lastName: "Knol",
                 isActive: 1,
@@ -541,17 +533,18 @@ describe('Users', () => {
                 phoneNumber: "0612345678",
                 city: "Breda",
                 password: "secret",
-                emailAdress: "random@gmail.com"
+                emailAdress: "new@gmail.com"
             })
             .end((err, res) => {
+                console.log(res.body)
                 res.should.have.status(200)
                 res.should.be.an('object')
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode')
+                    .that.has.all.keys('statusCode', 'results')
 
-                let { statusCode } = res.body
+                let { statusCode, results } = res.body
                 statusCode.should.be.an('number')
 
                 done()

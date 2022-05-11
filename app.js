@@ -24,7 +24,7 @@ app.all('*', (req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  const status = err.status || 500
+  const status = err.statusCode
   console.error(err.stack)
   res.status(status).json(err)
 })

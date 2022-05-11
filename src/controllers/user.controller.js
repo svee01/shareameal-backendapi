@@ -7,33 +7,37 @@ module.exports = {
     createUser: (req, res, next) => {
         console.log('createUser aangeroepen')
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err
-
-            try {
-                connection.query(
-                    `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`,
-                    function (error, results, fields) {
+            connection.query(
+                `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`,
+                function (error, results, fields) {
+                    console.log(`SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`)
+                    
+                    if (results.length > 0) {
                         connection.release()
 
-                        if (error) throw error
+                        const error = {
+                            statusCode: 400,
+                            error: 'user already exists',
+                        }
 
-                        res.status(200).json({
-                            statusCode: 200,
-                            results: results,
-                        })
+                        next(error)
+                    } else {
+                        connection.query(
+                            `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`,
+                            function (error, results, fields) {
+                                connection.release()
+            
+                                if (error) throw error
+            
+                                res.status(200).json({
+                                    statusCode: 200,
+                                    results: results,
+                                })
+                            }
+                        )
                     }
-                )
-            } catch (err) {
-                console.log(`Error message: ${err.message}`)
-                console.log(`Error code: ${err.code}`)
-
-                const error = {
-                    statusCode: 400,
-                    error: err.message,
                 }
-
-                next(error)
-            }
+            )
         })
     },
 
@@ -43,43 +47,24 @@ module.exports = {
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
 
-            try {
-                connection.query(
-                    `SELECT * FROM user WHERE id = ${userId};`,
-                    function (error, results, fields) {
-                        connection.release()
+            connection.query(
+                `SELECT * FROM user WHERE id = ${userId};`,
+                function (error, results, fields) {
+                    connection.release()
 
-                        if (error) throw error
-
-                        if (results.body.length == 0) {
-                            console.log(`Error message: ${err.message}`)
-                            console.log(`Error code: ${err.code}`)
-
-                            const error = {
-                                statusCode: 404,
-                                error: err.message,
-                            }
-
-                            next(error)
-                        }
-
+                    if (results.length == 0) {
+                        next({
+                            statusCode: 404,
+                            error: 'User ID does not exist'
+                        })
+                    } else {
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
                         })
                     }
-                )
-            } catch (err) {
-                console.log(`Error message: ${err.message}`)
-                console.log(`Error code: ${err.code}`)
-
-                const error = {
-                    statusCode: 400,
-                    error: err.message,
                 }
-
-                next(error)
-            }
+            )
         })
     },
 
@@ -126,7 +111,7 @@ module.exports = {
 
             try {
                 connection.query(
-                    `UPDATE user SET firstName = "${req.body.firstName}", lastName = "${req.body.lastName}", isActive = ${req.body.isActive}, emailAdress = "${req.body.emailAdress}", password = "${req.body.password}", phoneNumber = "${req.body.phoneNumber}", street = "${req.body.street}", city = "${req.body.city}" WHERE id = "${req.body.id}";`,
+                    `UPDATE user SET firstName = "${req.body.firstName}", lastName = "${req.body.lastName}", isActive = ${req.body.isActive}, emailAdress = "${req.body.emailAdress}", password = "${req.body.password}", phoneNumber = "${req.body.phoneNumber}", street = "${req.body.street}", city = "${req.body.city}" WHERE id = "${userId}";`,
                     function (error, results, fields) {
                         connection.release()
     
@@ -178,6 +163,7 @@ module.exports = {
 
     // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     validateUser: (req, res, next) => {
+        console.log(req.body)
         const { firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city } = req.body
         try {
             assert.equal(typeof firstName, 'string', 'first name must be a string')

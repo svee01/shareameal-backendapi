@@ -15,7 +15,9 @@ router.get('/user/profile')
 // 204 get a single user by id
 router.get('/user/:id', userController.getById)
 // 205 update a single user by id
-router.put('/user/:id', userController.updateById)
+router.put('/user/:id',
+    userController.validateUser,
+    userController.updateById)
 // 206 delete a user
 router.delete('/user/:id', userController.deleteById)
 
