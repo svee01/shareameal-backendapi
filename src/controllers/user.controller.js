@@ -38,7 +38,7 @@ module.exports = {
     },
 
     getById: (req, res, next) => {
-        const userId = req.params.userId
+        const userId = req.params.id
         console.log(`User met ID ${userId} gezocht`)
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err

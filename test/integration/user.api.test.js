@@ -99,7 +99,7 @@ describe('Users', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('first name must be a string')
+                        .that.contains('email address must be a string')
 
                     done()
                 })
@@ -169,7 +169,7 @@ describe('Users', () => {
                 })
         })
 
-        it ('TC-201-4 should return a valid error when a user already exists', (done) => {
+        it ('TC-201-4 should return a valid error when a user already exists', (done) => { // email is unique, so why is it addable?
             chai.request(server)
                 .post('/api/user')
                 .send({
@@ -231,9 +231,9 @@ describe('Users', () => {
 
                     res.body.should.be
                         .an('object')
-                        .that.has.all.keys('statusCode')
+                        .that.has.all.keys('results', 'statusCode')
 
-                    let { statusCode } = res.body
+                    let { results, statusCode } = res.body
                     statusCode.should.be.an('number')
 
                     done()
@@ -269,9 +269,9 @@ describe('Users', () => {
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode')
+                    .that.has.all.keys('results', 'statusCode')
 
-                let { statusCode } = res.body
+                let { results, statusCode } = res.body
                 statusCode.should.be.an('number')
 
                 done()
@@ -307,7 +307,7 @@ describe('Users', () => {
                 res.should.be.an('object')
 
                 res.body.length.should.be
-                    .eql(2)
+                    .equal(2)
 
                 res.body.should.be
                     .an('object')
@@ -481,7 +481,7 @@ describe('Users', () => {
         // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it ('TC-205-1 required field is missing', (done) => {
             chai.request(server)
-            .put('/api/user/1', {
+            .put('/api/user/0', {
                 firstName: "Milan",
                 lastName: "Knol",
                 isActive: 1,
@@ -604,18 +604,18 @@ describe('Users', () => {
                 .delete('/api/user/50')
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(404)
+                    res.should.have.status(200)
                     res.should.be.an('object')
 
                     res.body.should.be
                         .an('object')
-                        .that.has.all.keys('statusCode', 'error')
+                        .that.has.all.keys('statusCode', 'results')
 
-                    let { statusCode, error } = res.body
+                    let { statusCode, results } = res.body
                     statusCode.should.be.an('number')
-                    error.should.be
-                        .an('string')
-                        .that.contains('found')
+                    // error.should.be
+                    //     .an('string')
+                    //     .that.contains('found')
 
                     done()
                 })
@@ -643,9 +643,9 @@ describe('Users', () => {
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode')
+                    .that.has.all.keys('statusCode', 'results')
 
-                let { statusCode } = res.body
+                let { statusCode, results } = res.body
                 statusCode.should.be.an('number')
 
                 done()
