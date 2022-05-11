@@ -131,7 +131,6 @@ describe('Users', () => {
 
                     done()
                 })
-            done()
         })
 
         it ('TC-201-3 should return a valid error when password is invalid', (done) => {
@@ -162,7 +161,6 @@ describe('Users', () => {
 
                     done()
                 })
-            done()
         })
 
         it ('TC-201-4 should return a valid error when a user already exists', (done) => {
@@ -201,7 +199,6 @@ describe('Users', () => {
 
                     done()
                 })
-            done()
         })
 
         // Gebruiker is toegevoegd in het systeem. Responsestatus HTTP code 200 Response bevat JSON object met daarin volledige gebruikersnaam en het gegenereerde token.
@@ -229,7 +226,6 @@ describe('Users', () => {
 
                     done()
                 })
-            done()
         })
     })
 
@@ -268,7 +264,6 @@ describe('Users', () => {
 
                 done()
             })
-            done()
         })
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van twee gebruikers.
@@ -307,7 +302,6 @@ describe('Users', () => {
 
                 done()
             })
-            done()
         })
 
         // Responsestatus HTTP code 200 Response bevat JSON object met nul gebruikers. ?????????????????????????????????????????
@@ -428,7 +422,6 @@ describe('Users', () => {
 
                     done()
             })
-            done()
         })
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
@@ -448,7 +441,6 @@ describe('Users', () => {
 
                 done()
             })
-            done()
         })
     })
 
@@ -498,7 +490,6 @@ describe('Users', () => {
 
                     done()
             })
-            done()
         })
 
         // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding. --> there is no postal code
@@ -534,7 +525,6 @@ describe('Users', () => {
 
                     done()
             })
-            done()
         })
 
         // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding. --> yet to come in class too
@@ -567,7 +557,6 @@ describe('Users', () => {
 
                 done()
             })
-            done()
         })
     })
 
@@ -610,7 +599,6 @@ describe('Users', () => {
 
                     done()
                 })
-            done()
         })
 
         // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
@@ -642,7 +630,6 @@ describe('Users', () => {
 
                 done()
             })
-            done()
         })
     })
 
