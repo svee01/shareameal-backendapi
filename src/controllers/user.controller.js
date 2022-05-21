@@ -1,16 +1,50 @@
 const database = require('../../database/inmemdb')
 const dbconnection = require('../../database/dbconnection')
 const assert = require('assert')
+const { logger } = require('../config/config')
 
 module.exports = {
+
+    getPersonalProfile: (req, res, next) => {
+        logger.debug(`getPersonalProfile called`)
+        dbconnection.getConnection(function (err, connection) {
+            connection.query(
+                `SELECT * FROM user WHERE id = ${req.id};`,
+                function (error, results, fields) {
+                    logger.debug(`SELECT * FROM user WHERE id = ${req.id};`)
+
+                    if (results.length > 0) {
+                        connection.release()
+
+                        if (error) throw error
+
+                        res.status(200).json({
+                            statusCode: 200,
+                            results: results,
+                        })
+                    } else {
+                        connection.release()
+
+                        const error = {
+                            statusCode: 400,
+                            error: 'user already exists',
+                        }
+
+                        next(error)
+                    }
+                }
+            )
+        })
+    },
+
     // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     createUser: (req, res, next) => {
-        console.log('createUser aangeroepen')
+        logger.debug('createUser aangeroepen')
         dbconnection.getConnection(function (err, connection) {
             connection.query(
                 `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`,
                 function (error, results, fields) {
-                    console.log(`SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`)
+                    logger.debug(`SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`)
                     
                     if (results.length > 0) {
                         connection.release()
@@ -43,7 +77,7 @@ module.exports = {
 
     getById: (req, res, next) => {
         const userId = req.params.id
-        console.log(`User met ID ${userId} gezocht`)
+        logger.debug(`User met ID ${userId} gezocht`)
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
 
@@ -69,7 +103,7 @@ module.exports = {
     },
 
     getAll: (req, res, next) => {
-        console.log('getAll aangeroepen')
+        logger.debug('getAll aangeroepen')
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
 
@@ -81,7 +115,7 @@ module.exports = {
     
                         if (error) throw error
     
-                        console.log('#results = ', results.length)
+                        logger.debug('#results = ', results.length)
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
@@ -89,8 +123,8 @@ module.exports = {
                     }
                 )
             } catch (err) {
-                console.log(`Error message: ${err.message}`)
-                console.log(`Error code: ${err.code}`)
+                logger.error(`Error message: ${err.message}`)
+                logger.error(`Error code: ${err.code}`)
 
                 const error = {
                     statusCode: 400,
@@ -105,7 +139,7 @@ module.exports = {
     // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     updateById: (req, res, next) => {
         let userId = req.params.id
-        console.log('updateById aangeroepen')
+        logger.debug('updateById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
 
@@ -117,7 +151,7 @@ module.exports = {
     
                         if (error) throw error
     
-                        console.log(`updated user ${userId} successfully!`)
+                        logger.debug(`updated user ${userId} successfully!`)
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
@@ -125,8 +159,8 @@ module.exports = {
                     }
                 )
             } catch (err) {
-                console.log(`Error message: ${err.message}`)
-                console.log(`Error code: ${err.code}`)
+                logger.error(`Error message: ${err.message}`)
+                logger.error(`Error code: ${err.code}`)
 
                 const error = {
                     statusCode: 400,
@@ -140,7 +174,7 @@ module.exports = {
 
     deleteById: (req, res, next) => {
         let userId = req.params.id
-        console.log('deleteById aangeroepen')
+        logger.debug('deleteById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
             
@@ -151,7 +185,7 @@ module.exports = {
 
                     if (error) throw error
 
-                    console.log(`deleted user ${userId} successfully!`)
+                    logger.debug(`deleted user ${userId} successfully!`)
                     res.status(200).json({
                         statusCode: 200,
                         results: results,
@@ -163,7 +197,7 @@ module.exports = {
 
     // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     validateUser: (req, res, next) => {
-        console.log(req.body)
+        logger.debug(req.body)
         const { firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city } = req.body
         try {
             assert.equal(typeof firstName, 'string', 'first name must be a string')
@@ -176,8 +210,8 @@ module.exports = {
             assert.equal(typeof phoneNumber, 'string', 'phone number must be a string')
             next()
         } catch (err) {
-            console.log(`Error message: ${err.message}`)
-            console.log(`Error code: ${err.code}`)
+            logger.error(`Error message: ${err.message}`)
+            logger.error(`Error code: ${err.code}`)
             // zie de Express handleiding op https://expressjs.com/en/guide/error-handling.html
             const error = {
                 statusCode: 400,

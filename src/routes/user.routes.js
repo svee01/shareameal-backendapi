@@ -10,7 +10,7 @@ router.post(
 // 202 get all users
 router.get('/user', userController.getAll)
 // 203 get your personal user profile
-router.get('/user/profile')
+router.get('/user/profile', userController.getPersonalProfile)
 // 204 get a single user by id
 router.get('/user/:id', userController.getById)
 // 205 update a single user by id
