@@ -6,7 +6,7 @@ const server = require('../../app')
 const assert = require('assert')
 require('dotenv').config()
 const dbconnection = require('../../database/dbconnection')
-const { jwtSecretKey } = require('../../src/config/config')
+const jwtSecretKey = require('../../src/config/config').jwtSecretKey
 const jwt = require('jsonwebtoken')
 
 chai.should()
@@ -63,7 +63,7 @@ describe('Login', () => {
             chai.request(server)
                 .post('/api/auth/login')
                 .send({
-                    emailAdress: "random@gmail.com",
+                    emailAdress: "m.vandullemen@server.nl",
                     // password: "secret",
                 })
                 .end((err, res) => {
@@ -113,7 +113,7 @@ describe('Login', () => {
             chai.request(server)
                 .post('/api/auth/login')
                 .send({
-                    emailAdress: "random@gmail.com",
+                    emailAdress: "m.vandullemen@server.nl",
                     password: "wrongwrong",
                 })
                 .end((err, res) => {
@@ -161,11 +161,11 @@ describe('Login', () => {
         })
 
         // Response bevat JSON object met daarin volledige gebruikersinformatie en het gegenereerde token en code 200
-        it('TC-101-5 User doesnt exist', (done) => {
+        it('TC-101-5 Successfully logged in', (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post('/api/auth/login')
                 .send({
-                    emailAdress: "random@gmail.com",
+                    emailAdress: "m.vandullemen@server.nl",
                     password: "secret",
                 })
                 .end((err, res) => {
@@ -498,13 +498,44 @@ describe('Users', () => {
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it ('TC-203-1 invalid token', (done) => {
+            chai.request(server)
+            .post('/api/auth/login')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, "wrong")})
+            .end((err, res) => {
+                res.should.have.status(404)
+                res.should.be.an('object')
 
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'error')
+
+                let { statusCode, error } = res.body
+                statusCode.should.be.an('number')
+
+                done()
+            })
             done()
         })
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
         it ('TC-203-2 valid token and user exists', (done) => {
+            chai.request(server)
+            .post('/api/auth/login')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(200)
+                res.should.be.an('object')
 
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'results')
+
+                let { statusCode, results } = res.body
+                statusCode.should.be.an('number')
+
+                done()
+            })
+            done()
             done()
         })
     })
@@ -937,24 +968,21 @@ describe('Meals', () => {
         // code 200
         it('TC-303-1 Lijst van maaltijden wordt succesvol geretourneerd', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .get('/api/meal')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(200)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'results')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, results } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
     })
 
@@ -982,47 +1010,41 @@ describe('Meals', () => {
         // code 404
         it('TC-304-1 Maaltijd bestaat niet', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .get('/api/meal/50000')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(404)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'error')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, error } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
 
         // code 200
         it('TC-304-2 Details van maaltijd geretourneerd', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .get('/api/meal/1')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(200)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'results')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, results } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
     })
 
@@ -1050,94 +1072,81 @@ describe('Meals', () => {
         // code 401
         it('TC-305-2 Niet ingelogd', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .delete('/api/meal/1')
+            .end((err, res) => {
+                res.should.have.status(401)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'error')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, error } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
 
         // code 403
         it('TC-305-3 Niet de eigenaar van de data', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .delete('/api/meal/3')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(403)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'error')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, error } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
 
         // code 404
         it('TC-305-4 Maaltijd bestaat niet', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .delete('/api/meal/50000')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(404)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'error')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, error } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
 
         // code 200
         it('TC-305-5 Maaltijd succesvol verwijderd', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .delete('/api/meal/1')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .end((err, res) => {
+                res.should.have.status(200)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'results')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, results } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
             })
         })
     })
+})
 })

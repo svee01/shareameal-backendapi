@@ -14,7 +14,7 @@ module.exports = {
                 function (error, results, fields) {
                     connection.release()
 
-                    if (error) {
+                    if (error || results.length == 0) {
                         next({
                             statusCode: 404,
                             error: 'Meal ID does not exist'
@@ -73,31 +73,32 @@ module.exports = {
         })
     },
 
+    //isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price,                                                                                                                                                                                                                     imageUrl, cookId, name, description
     createMovie: (req, res, next) => {
         logger.debug('createMovie aangeroepen')
-        meal = req.body
+        let cookId = req.userId
+        let price = parseFloat(req.body.price)
+        logger.debug(`${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${price}, "${req.body.imageUrl}", ${cookId}, "${req.body.name}", "${req.body.description}"`)
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
             connection.query(
-                `INSERT INTO meal SET ${meal};`,
+                `INSERT INTO meal (isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${req.body.price}, "${req.body.imageUrl}", ${cookId}, "${req.body.name}", "${req.body.description}");`,
                 function (error, results, fields) {
-                    if (error) {
+                    logger.debug(results)
+                    logger.debug(error)
+                    if (results) {
                         connection.release()
-
-                        const error = {
-                            statusCode: 400,
-                            error: 'meal input was wrong',
-                        }
-
-                        next(error)
-                    } else {
-                        connection.release()
-
-                        logger.info(`app.js: movie successfully added!`)
             
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
+                        })
+                    } else {
+                        connection.release()
+
+                        next({
+                            statusCode: 400,
+                            error: 'meal already exists',
                         })
                     }
                 }
@@ -131,15 +132,13 @@ module.exports = {
 
     // isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants,                                                                                                                                         price, imageUrl, cookId, name, description
     updateById: (req, res, next) => {
-        const meal = req.body
+        const cookId = req.userId
         let mealId = req.params.id
         logger.debug('updateById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err
-
             try {
                 connection.query(
-                    `UPDATE meal SET ${meal} WHERE id = "${mealId}";`,
+                    `UPDATE meal SET isActive = ${req.body.isActive}, isVega = ${req.body.isVega}, isVegan = ${req.body.isVegan}, isToTakeHome = ${req.body.isToTakeHome}, maxAmountOfParticipants = ${req.body.maxAmountOfParticipants}, price = ${req.body.price}, imageUrl = ${req.body.imageUrl}, cookId = ${cookId}, name = "${req.body.name}", description = "${req.body.description}" WHERE id = "${mealId}";`,
                     function (error, results, fields) {
                         connection.release()
     
@@ -156,12 +155,10 @@ module.exports = {
                 logger.error(`Error message: ${err.message}`)
                 logger.error(`Error code: ${err.code}`)
 
-                const error = {
+                next({
                     statusCode: 400,
                     error: err.message,
-                }
-
-                next(error)
+                })
             }
         })
     },
@@ -173,17 +170,29 @@ module.exports = {
             if (err) throw err
             
             connection.query(
-                `DELETE FROM meal WHERE id = ${mealId};`,
+                `SELECT * FROM meal WHERE id = ${mealId};`,
                 function (error, results, fields) {
-                    connection.release()
+                    if (results.length == 0) {
+                        next({
+                            statusCode: 404,
+                            error: 'meal not found',
+                        })
+                    } else {
+                        connection.query(
+                            `DELETE FROM meal WHERE id = ${mealId};`,
+                            function (error, results, fields) {
+                                connection.release()
 
-                    if (error) throw error
+                                if (error) throw error
 
-                    logger.debug(`deleted meal ${mealId} successfully!`)
-                    res.status(200).json({
-                        statusCode: 200,
-                        results: results,
-                    })
+                                logger.debug(`deleted meal ${mealId} successfully!`)
+                                res.status(200).json({
+                                    statusCode: 200,
+                                    results: results,
+                                })
+                            }
+                        )
+                    }
                 }
             )
         })
