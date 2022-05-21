@@ -6,6 +6,8 @@ const server = require('../../app')
 const assert = require('assert')
 require('dotenv').config()
 const dbconnection = require('../../database/dbconnection')
+const { jwtSecretKey } = require('../../src/config/config')
+const jwt = require('jsonwebtoken')
 
 chai.should()
 chai.use(chaiHttp)
@@ -59,16 +61,10 @@ describe('Login', () => {
         // Response bevat JSON object met daarin generieke foutinformatie en code 400
         it('TC-101-1 Required field is missing', (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post('/api/auth/login')
                 .send({
-                    firstName: "Milan",
-                    lastName: "Knol",
-                    isActive: 1,
-                    street: "Lovensdijkstraat 61",
-                    phoneNumber: "0612345678",
-                    city: "Breda",
-                    password: "secret",
-                    // emailAdress: "random@gmail.com"
+                    emailAdress: "random@gmail.com",
+                    // password: "secret",
                 })
                 .end((err, res) => {
                     assert.ifError(err)
@@ -83,7 +79,6 @@ describe('Login', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('email address must be a string')
 
                     done()
                 })
@@ -91,16 +86,10 @@ describe('Login', () => {
 
         it('TC-101-2 Unvalid email address', (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post('/api/auth/login')
                 .send({
-                    firstName: "Milan",
-                    lastName: "Knol",
-                    isActive: 1,
-                    street: "Lovensdijkstraat 61",
-                    phoneNumber: "0612345678",
-                    city: "Breda",
+                    emailAdress: "unvalidemail",
                     password: "secret",
-                    // emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
                     assert.ifError(err)
@@ -115,7 +104,6 @@ describe('Login', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('email address must be a string')
 
                     done()
                 })
@@ -123,16 +111,10 @@ describe('Login', () => {
 
         it('TC-101-3 Unvalid password', (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post('/api/auth/login')
                 .send({
-                    firstName: "Milan",
-                    lastName: "Knol",
-                    isActive: 1,
-                    street: "Lovensdijkstraat 61",
-                    phoneNumber: "0612345678",
-                    city: "Breda",
-                    password: "secret",
-                    // emailAdress: "random@gmail.com"
+                    emailAdress: "random@gmail.com",
+                    password: "wrongwrong",
                 })
                 .end((err, res) => {
                     assert.ifError(err)
@@ -147,7 +129,6 @@ describe('Login', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('email address must be a string')
 
                     done()
                 })
@@ -156,20 +137,14 @@ describe('Login', () => {
         // Response bevat JSON object met daarin generieke foutinformatie en code 404
         it('TC-101-4 User doesnt exist', (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post('/api/auth/login')
                 .send({
-                    firstName: "Milan",
-                    lastName: "Knol",
-                    isActive: 1,
-                    street: "Lovensdijkstraat 61",
-                    phoneNumber: "0612345678",
-                    city: "Breda",
-                    password: "secret",
-                    // emailAdress: "random@gmail.com"
+                    emailAdress: "idontexist@gmail.com",
+                    password: "wrongwrong",
                 })
                 .end((err, res) => {
                     assert.ifError(err)
-                    res.should.have.status(400)
+                    res.should.have.status(404)
                     res.should.be.an('object')
 
                     res.body.should.be
@@ -180,7 +155,6 @@ describe('Login', () => {
                     statusCode.should.be.an('number')
                     error.should.be
                         .an('string')
-                        .that.contains('email address must be a string')
 
                     done()
                 })
@@ -191,29 +165,19 @@ describe('Login', () => {
             chai.request(server)
                 .post('/api/user')
                 .send({
-                    firstName: "Milan",
-                    lastName: "Knol",
-                    isActive: 1,
-                    street: "Lovensdijkstraat 61",
-                    phoneNumber: "0612345678",
-                    city: "Breda",
+                    emailAdress: "random@gmail.com",
                     password: "secret",
-                    // emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(400)
+                    res.should.have.status(200)
                     res.should.be.an('object')
 
                     res.body.should.be
                         .an('object')
-                        .that.has.all.keys('statusCode', 'error')
+                        .that.has.all.keys('statusCode', 'results')
 
-                    let { statusCode, error } = res.body
+                    let { statusCode, results } = res.body
                     statusCode.should.be.an('number')
-                    error.should.be
-                        .an('string')
-                        .that.contains('email address must be a string')
 
                     done()
                 })
@@ -811,7 +775,6 @@ describe('Users', () => {
 })
 
 describe('Meals', () => {
-
     beforeEach((done) => {
         console.log('beforeEach called')
 
@@ -853,22 +816,33 @@ describe('Meals', () => {
         // code 400
         it('TC-301-1 Verplicht veld ontbreekt', (done) => {
             chai.request(server)
-                .get('/api/movie')
+                .post('/api/meal')
+                .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+                .send({
+                    "isActive": 1,
+                    "isVega": 1,
+                    "isVegan": 1,
+                    "isToTakeHome": 1,
+                    "maxAmountOfParticipants": 8,
+                    "price": 4,
+                    // "imageUrl": "randomUrl",
+                    // "cookId": 1,
+                    // "name": "Hihi",
+                    "description": "hihi",
+                })
                 .end((err, res) => {
                     assert.ifError(err)
 
-                    res.should.have.status(200)
+                    res.should.have.status(400)
                     res.should.be.an('object')
 
                     res.body.should.be
                         .an('object')
-                        .that.has.all.keys('results', 'statusCode')
+                        .that.has.all.keys('statusCode', 'error')
 
-                    let { statusCode, results } = res.body
+                    let { statusCode, error } = res.body
                     statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
+                    
                     done()
                 })
         })
@@ -877,46 +851,64 @@ describe('Meals', () => {
         it('TC-301-2 Niet ingelogd', (done) => {
             chai.request(server)
                 .get('/api/movie')
+                .send({
+                    "isActive": 1,
+                    "isVega": 1,
+                    "isVegan": 1,
+                    "isToTakeHome": 1,
+                    "maxAmountOfParticipants": 8,
+                    "price": 4,
+                    "imageUrl": "randomUrl",
+                    "cookId": 1,
+                    "name": "Hihi",
+                    "description": "hihi",
+                })
                 .end((err, res) => {
                     assert.ifError(err)
 
-                    res.should.have.status(200)
+                    res.should.have.status(401)
                     res.should.be.an('object')
 
                     res.body.should.be
                         .an('object')
-                        .that.has.all.keys('results', 'statusCode')
+                        .that.has.all.keys('statusCode', 'error')
 
-                    let { statusCode, results } = res.body
+                    let { statusCode, error } = res.body
                     statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
+                    
                     done()
-                })
         })
 
         // code 200
         it('TC-301-3 Maaltijd succesvol toegevoegd', (done) => {
             chai.request(server)
-                .get('/api/movie')
-                .end((err, res) => {
-                    assert.ifError(err)
+            .post('/api/meal')
+            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
+            .send({
+                "isActive": 1,
+                "isVega": 1,
+                "isVegan": 1,
+                "isToTakeHome": 1,
+                "maxAmountOfParticipants": 8,
+                "price": 4,
+                "imageUrl": "randomUrl",
+                "cookId": 1,
+                "name": "Hihi",
+                "description": "hihi",
+            })
+            .end((err, res) => {
+                res.should.have.status(200)
+                res.should.be.an('object')
 
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                res.body.should.be
+                    .an('object')
+                    .that.has.all.keys('statusCode', 'results')
 
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-                    results.should.be.an('array').that.has.length(2)
-                    results[0].name.should.equal('Meal A')
-                    results[0].id.should.equal(1)
-                    done()
-                })
+                let { statusCode, results } = res.body
+                statusCode.should.be.an('number')
+                
+                done()
+            })
         })
     })
 
@@ -1145,6 +1137,7 @@ describe('Meals', () => {
                     results[0].id.should.equal(1)
                     done()
                 })
+            })
         })
     })
 })

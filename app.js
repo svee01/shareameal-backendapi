@@ -3,7 +3,7 @@ const database = require('./database/inmemdb')
 const userRoutes = require('./src/routes/user.routes')
 const authRoutes = require('./src/routes/auth.routes')
 const mealRoutes = require('./src/routes/meal.routes')
-const dbconnection = require('./src/database/dbconnection')
+const dbconnection = require('./database/dbconnection')
 const logger = require('./src/config/config').logger
 require('dotenv').config()
 

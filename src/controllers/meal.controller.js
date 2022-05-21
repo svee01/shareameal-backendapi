@@ -1,15 +1,10 @@
-const dbconnection = require('../database/dbconnection')
+const dbconnection = require('../../database/dbconnection')
 const logger = require('../config/config').logger
 const assert = require('assert')
 
-/**
- * We exporteren hier een object. Dat object heeft attributen met een waarde.
- * Die waarde kan een string, number, boolean, array, maar ook een functie zijn.
- * In dit geval zijn de attributen functies.
- */
 module.exports = {
     getById: (req, res, next) => {
-        const mealId = req.params.movieId
+        const mealId = req.params.id
         logger.debug(`Meal met ID ${mealId} gezocht`)
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
@@ -19,7 +14,7 @@ module.exports = {
                 function (error, results, fields) {
                     connection.release()
 
-                    if (results.length == 0) {
+                    if (error) {
                         next({
                             statusCode: 404,
                             error: 'Meal ID does not exist'
@@ -58,20 +53,16 @@ module.exports = {
         logger.debug(`queryString = ${queryString}`)
 
         dbconnection.getConnection(function (err, connection) {
-            if (err) next(err) // not connected!
+            if (err) next(err)
 
-            // Use the connection
             connection.query(
                 queryString,
                 [name, isActive],
                 function (error, results, fields) {
-                    // When done with the connection, release it.
                     connection.release()
 
-                    // Handle error after the release.
                     if (error) next(error)
 
-                    // Don't use the connection here, it has been returned to the pool.
                     logger.debug('#results = ', results.length)
                     res.status(200).json({
                         statusCode: 200,
@@ -82,40 +73,27 @@ module.exports = {
         })
     },
 
-    // `id` int NOT NULL AUTO_INCREMENT,
-//   `isActive` tinyint NOT NULL DEFAULT '0',
-//   `isVega` tinyint NOT NULL DEFAULT '0',
-//   `isVegan` tinyint NOT NULL DEFAULT '0',
-//   `isToTakeHome` tinyint NOT NULL DEFAULT '1',
-//   `dateTime` datetime NOT NULL,
-//   `maxAmountOfParticipants` int NOT NULL DEFAULT '6',
-//   `price` decimal(5,2) NOT NULL,
-//   `imageUrl` varchar(255) NOT NULL,
-//   `cookId` int DEFAULT NULL,
-//   `createDate` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-//   `updateDate` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-//   `name` varchar(200) NOT NULL,
-//   `description` varchar(400) NOT NULL,
-//   `allergenes` set('gluten','lactose','noten') NOT NULL DEFAULT '',
     createMovie: (req, res, next) => {
         logger.debug('createMovie aangeroepen')
+        meal = req.body
         dbconnection.getConnection(function (err, connection) {
+            if (err) throw err
             connection.query(
-                `INSERT INTO meal (isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.dateTime}, ${req.body.maxAmountOfParticipants}, ${req.body.price}, ${req.body.imageUrl}, ${req.id}, "${req.body.name}", "${req.body.description}");`,
+                `INSERT INTO meal SET ${meal};`,
                 function (error, results, fields) {
                     if (error) {
                         connection.release()
 
                         const error = {
                             statusCode: 400,
-                            error: 'meal input is wrong',
+                            error: 'meal input was wrong',
                         }
 
                         next(error)
                     } else {
                         connection.release()
-            
-                        if (error) throw error
+
+                        logger.info(`app.js: movie successfully added!`)
             
                         res.status(200).json({
                             statusCode: 200,
@@ -125,19 +103,20 @@ module.exports = {
                 }
             )
         })
-
-        logger.debug(`index.js: movie successfully added!`)
-        res.status(200).json({
-            statusCode: 200,
-            result,
-        })
     },
 
+    //isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description
     validateMovie: (req, res, next) => {
-        const { title, year, studio } = req.body
+        const { isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description } = req.body
         try {
-            assert.equal(typeof title, 'string', 'title must be a string')
-            assert.equal(typeof year, 'number', 'year must be a number')
+            assert.equal(typeof isActive, 'number', 'isActive must be a number')
+            assert.equal(typeof isVega, 'number', 'isVega must be a number')
+            assert.equal(typeof isVegan, 'number', 'isVegan must be a number')
+            assert.equal(typeof isToTakeHome, 'number', 'isToTakeHome must be a number')
+            assert.equal(typeof maxAmountOfParticipants, 'number', 'maxAmountOfParticipants must be a number')
+            assert.equal(typeof imageUrl, 'string', 'imageUrl must be a string')
+            assert.equal(typeof name, 'string', 'name must be a string')
+            assert.equal(typeof description, 'string', 'description must be a string')
             next()
         } catch (err) {
             logger.debug(`Error message: ${err.message}`)
@@ -152,6 +131,7 @@ module.exports = {
 
     // isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants,                                                                                                                                         price, imageUrl, cookId, name, description
     updateById: (req, res, next) => {
+        const meal = req.body
         let mealId = req.params.id
         logger.debug('updateById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
@@ -159,7 +139,7 @@ module.exports = {
 
             try {
                 connection.query(
-                    `UPDATE meal SET isActive = ${req.body.isActive}, isVega = ${req.body.isVega}, isVegan = ${req.body.isVegan}, isToTakeHome = ${req.body.isToTakeHome}, dateTime = ${req.body.dateTime}, maxAmountOfParticipants = ${req.body.maxAmountOfParticipants}, price = ${req.body.price}, imageUrl = ${req.body.imageUrl}, cookId = ${req.id}, name = "${req.body.name}", description = "${req.body.description}" WHERE id = "${mealId}";`,
+                    `UPDATE meal SET ${meal} WHERE id = "${mealId}";`,
                     function (error, results, fields) {
                         connection.release()
     

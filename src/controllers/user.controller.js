@@ -7,11 +7,12 @@ module.exports = {
 
     getPersonalProfile: (req, res, next) => {
         logger.debug(`getPersonalProfile called`)
+        const id = req.userId
         dbconnection.getConnection(function (err, connection) {
             connection.query(
-                `SELECT * FROM user WHERE id = ${req.id};`,
+                `SELECT * FROM user WHERE id = ${id};`,
                 function (error, results, fields) {
-                    logger.debug(`SELECT * FROM user WHERE id = ${req.id};`)
+                    logger.debug(`SELECT * FROM user WHERE id = ${id};`)
 
                     if (results.length > 0) {
                         connection.release()
@@ -27,7 +28,7 @@ module.exports = {
 
                         const error = {
                             statusCode: 400,
-                            error: 'user already exists',
+                            error: 'couldnt find user',
                         }
 
                         next(error)
