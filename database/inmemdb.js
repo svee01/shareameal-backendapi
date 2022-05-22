@@ -5,7 +5,7 @@ let id = 0
 module.exports = {
 
     createUser(user, callback) {
-        console.log('createUser called')
+        logger.info('createUser called')
 
         setTimeout(() => {
             if (
@@ -14,7 +14,7 @@ module.exports = {
                 _userdb.filter((item) => item.name === user.name).length > 0
             ) {
                 const error = 'A user with this name already exists.'
-                console.log(error)
+                logger.error(error)
                 callback(error, undefined)
             } else {
                 const userToAdd = {
@@ -28,21 +28,21 @@ module.exports = {
     },
 
     listUsers(callback) {
-        console.log('listUsers called')
+        logger.info('listUsers called')
 
         setTimeout(() => {
             if (_userdb.length > 0) {
                 callback(undefined, _userdb)
             } else {
                 const error = 'This database is empty!'
-                console.log(error)
+                logger.error(error)
                 callback(error, undefined)
             }
         }, timeout)
     },
 
     getUserById(id, callback) {
-        console.log('getUserById called')
+        logger.info('getUserById called')
 
         setTimeout(() => {
             if (
@@ -52,21 +52,21 @@ module.exports = {
                 callback(undefined, userById)
             } else {
                 const error = 'A user with this ID does not exist.'
-                console.log(error)
+                logger.error(error)
                 callback(error, undefined)
             }
         }, timeout)
     },
 
     updateUser(user, id, callback) {
-        console.log('updateUser called')
+        logger.info('updateUser called')
 
         setTimeout(() => {
             const index = _userdb.findIndex((item) => id == item.id)
 
             if (user.id || index === -1) {
                 const error = 'A user with this ID does not exist.'
-                console.log(error)
+                logger.error(error)
                 callback(error, undefined)
             } else {
                 _userdb[index] = {
@@ -79,17 +79,17 @@ module.exports = {
     },
 
     deleteUser(id, callback) {
-        console.log('deleteUser called')
+        logger.info('deleteUser called')
 
         setTimeout(() => {
             if (_userdb.length >= id || _userdb.length == id - 1) {
                 let userById = this.getUserById(id, callback)
                 _userdb.splice(userById, 1)
-                console.log(`Deleted user: ${userById}`)
+                logger.info(`Deleted user: ${userById}`)
                 callback(undefined, userById)
             } else {
                 const error = 'A user with this ID does not exist.'
-                console.log(error)
+                logger.error(error)
                 callback(error, undefined)
             }
         }, timeout)

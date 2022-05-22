@@ -541,15 +541,13 @@ describe('Users', () => {
             .get('/api/user/profile')
             .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, "wrong")})
             .end((err, res) => {
-                res.should.have.status(200)
                 res.should.be.an('object')
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    .that.has.all.keys('datetime', 'error')
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                let { datetime, error } = res.body
 
                 done()
             })
@@ -782,15 +780,14 @@ describe('Users', () => {
             .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
             .end((err, res) => {
                 console.log(res.body)
-                res.should.have.status(200)
+                res.should.have.status(401)
                 res.should.be.an('object')
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    .that.has.all.keys('datetime', 'error')
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                let { datetime, error } = res.body
 
                 done()
             })
@@ -890,10 +887,9 @@ describe('Users', () => {
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    .that.has.all.keys('datetime', 'error')
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                let { datetime, error } = res.body
 
                 done()
             })
@@ -1064,15 +1060,14 @@ describe('Meals', () => {
             .get('/api/meal')
             .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
             .end((err, res) => {
-                res.should.have.status(200)
+                res.should.have.status(401)
                 res.should.be.an('object')
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    .that.has.all.keys('datetime', 'error')
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                let { datetime, error } = res.body
                 
                 done()
             })
@@ -1224,15 +1219,14 @@ describe('Meals', () => {
             .delete('/api/meal/1')
             .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
             .end((err, res) => {
-                res.should.have.status(200)
+                res.should.have.status(401)
                 res.should.be.an('object')
 
                 res.body.should.be
                     .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    .that.has.all.keys('datetime', 'error')
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                let { datetime, error } = res.body
                 
                 done()
             })
