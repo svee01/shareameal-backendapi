@@ -16,9 +16,10 @@ router.get('/user/profile', authController.validateToken, userController.getPers
 router.get('/user/:id', userController.getById)
 // 205 update a single user by id
 router.put('/user/:id',
+    authController.validateToken,
     userController.validateUser,
     userController.updateById)
 // 206 delete a user
-router.delete('/user/:id', userController.deleteById)
+router.delete('/user/:id', authController.validateToken, userController.deleteById)
 
 module.exports = router

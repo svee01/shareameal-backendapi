@@ -86,16 +86,13 @@ module.exports = {
                 function (error, results, fields) {
                     logger.debug(results)
                     logger.debug(error)
+                    connection.release()
                     if (results) {
-                        connection.release()
-            
                         res.status(200).json({
                             statusCode: 200,
                             results: results,
                         })
                     } else {
-                        connection.release()
-
                         next({
                             statusCode: 400,
                             error: 'meal already exists',

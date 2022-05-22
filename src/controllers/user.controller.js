@@ -105,16 +105,37 @@ module.exports = {
 
     getAll: (req, res, next) => {
         logger.debug('getAll aangeroepen')
+
+        const queryParams = req.query
+        logger.debug(queryParams)
+
+        let { firstName, isActive } = req.query
+        let queryString = 'SELECT id, firstName FROM user'
+        if (firstName || isActive) {
+            queryString += ' WHERE '
+            if (firstName) {
+                queryString += 'firstName LIKE ?'
+                firstName = '%' + firstName + '%'
+            }
+            if (firstName && isActive) queryString + ' AND '
+            if (isActive) {
+                queryString += 'isActive = ?'
+            }
+        }
+        queryString += ';'
+        logger.debug(queryString)
+
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
 
             try {
                 connection.query(
-                    'SELECT id, firstName, lastName FROM user;',
+                    queryString,
+                    [firstName, isActive],
                     function (error, results, fields) {
                         connection.release()
     
-                        if (error) throw error
+                        if (error) next(error)
     
                         logger.debug('#results = ', results.length)
                         res.status(200).json({
@@ -140,25 +161,33 @@ module.exports = {
     // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     updateById: (req, res, next) => {
         let userId = req.params.id
+        let actualId = req.userId
         logger.debug('updateById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err
 
             try {
-                connection.query(
-                    `UPDATE user SET firstName = "${req.body.firstName}", lastName = "${req.body.lastName}", isActive = ${req.body.isActive}, emailAdress = "${req.body.emailAdress}", password = "${req.body.password}", phoneNumber = "${req.body.phoneNumber}", street = "${req.body.street}", city = "${req.body.city}" WHERE id = "${userId}";`,
-                    function (error, results, fields) {
-                        connection.release()
-    
-                        if (error) throw error
-    
-                        logger.debug(`updated user ${userId} successfully!`)
-                        res.status(200).json({
-                            statusCode: 200,
-                            results: results,
-                        })
-                    }
-                )
+                if (userId == actualId) {
+                    connection.query(
+                        `UPDATE user SET firstName = "${req.body.firstName}", lastName = "${req.body.lastName}", isActive = ${req.body.isActive}, emailAdress = "${req.body.emailAdress}", password = "${req.body.password}", phoneNumber = "${req.body.phoneNumber}", street = "${req.body.street}", city = "${req.body.city}" WHERE id = "${userId}";`,
+                        function (error, results, fields) {
+                            connection.release()
+        
+                            if (error) throw error
+        
+                            logger.debug(`updated user ${userId} successfully!`)
+                            res.status(200).json({
+                                statusCode: 200,
+                                results: results,
+                            })
+                        }
+                    )
+                } else {
+                    next({
+                        statusCode: 401,
+                        error: 'User is not the owner',
+                    })
+                }
             } catch (err) {
                 logger.error(`Error message: ${err.message}`)
                 logger.error(`Error code: ${err.code}`)
@@ -175,22 +204,43 @@ module.exports = {
 
     deleteById: (req, res, next) => {
         let userId = req.params.id
+        let actualId = req.userId
         logger.debug('deleteById aangeroepen')
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err
-            
+            if (err) next(err)
             connection.query(
-                `DELETE FROM user WHERE id = ${userId};`,
+                `SELECT * FROM user WHERE id = ${userId}`,
                 function (error, results, fields) {
                     connection.release()
 
-                    if (error) throw error
-
-                    logger.debug(`deleted user ${userId} successfully!`)
-                    res.status(200).json({
-                        statusCode: 200,
-                        results: results,
-                    })
+                    if (results.length == 0) {
+                        next({
+                            statusCode: 404,
+                            error: 'User doesnt exist',
+                        })
+                    } else {
+                        if (userId == actualId) {
+                            connection.query(
+                                `DELETE FROM user WHERE id = ${userId};`,
+                                function (error, results, fields) {
+                                    connection.release()
+                
+                                    if (error) throw error
+                
+                                    logger.debug(`deleted user ${userId} successfully!`)
+                                    res.status(200).json({
+                                        statusCode: 200,
+                                        results: results,
+                                    })
+                                }
+                            )
+                        } else {
+                            next({
+                                statusCode: 401,
+                                error: 'User is not the owner',
+                            })
+                        }
+                    }
                 }
             )
         })
