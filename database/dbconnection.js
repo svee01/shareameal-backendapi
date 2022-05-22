@@ -1,6 +1,6 @@
 const mysql = require('mysql2')
 require('dotenv').config()
-const { logger } = require('../config/config')
+const { logger } = require('../src/config/config')
 
 const dbConfig = {
     connectionLimit: 100,
