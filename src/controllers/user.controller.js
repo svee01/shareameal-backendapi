@@ -110,7 +110,7 @@ module.exports = {
         logger.debug(queryParams)
 
         let { firstName, isActive } = req.query
-        let queryString = 'SELECT id, firstName FROM user'
+        let queryString = 'SELECT * FROM user'
         if (firstName || isActive) {
             queryString += ' WHERE '
             if (firstName) {

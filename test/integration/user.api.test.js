@@ -1,220 +1,60 @@
-process.env.DB_DATABASE = process.env.DB_DATABASE || 'share-a-meal-testdb'
+process.env.DB_DATABASE = process.env.DB_DATABASE || "share-a-meal-testdb";
 
-const chai = require('chai')
-const chaiHttp = require('chai-http')
-const server = require('../../app')
-const assert = require('assert')
-require('dotenv').config()
-const dbconnection = require('../../database/dbconnection')
-const jwtSecretKey = require('../../src/config/config').jwtSecretKey
-const jwt = require('jsonwebtoken')
+const chai = require("chai");
+const chaiHttp = require("chai-http");
+const server = require("../../app");
+const assert = require("assert");
+require("dotenv").config();
+const dbconnection = require("../../database/dbconnection");
+const jwtSecretKey = require("../../src/config/config").jwtSecretKey;
+const jwt = require("jsonwebtoken");
 
-chai.should()
-chai.use(chaiHttp)
+chai.should();
+chai.use(chaiHttp);
 
-const CLEAR_MEAL_TABLE = 'DELETE IGNORE FROM `meal`;'
-const CLEAR_PARTICIPANTS_TABLE = 'DELETE IGNORE FROM `meal_participants_user`;'
-const CLEAR_USERS_TABLE = 'DELETE IGNORE FROM `user`;'
-const CLEAR_DB = CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE
+const CLEAR_MEAL_TABLE = "DELETE IGNORE FROM `meal`;";
+const CLEAR_PARTICIPANTS_TABLE = "DELETE IGNORE FROM `meal_participants_user`;";
+const CLEAR_USERS_TABLE = "DELETE IGNORE FROM `user`;";
+const CLEAR_DB =
+    CLEAR_MEAL_TABLE + CLEAR_PARTICIPANTS_TABLE + CLEAR_USERS_TABLE;
 
 const INSERT_USER =
-    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
+    "INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES" +
     '(1, "first", "last", "name@server.nl", "secret", "street", "city");' +
-    'INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES' +
-    '(2, "first", "last", "random@server.nl", "secret", "street", "city");'
+    "INSERT INTO `user` (`id`, `firstName`, `lastName`, `emailAdress`, `password`, `street`, `city` ) VALUES" +
+    '(2, "first", "last", "random@server.nl", "secret", "street", "city");';
 
 const INSERT_MEALS =
-    'INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES' +
+    "INSERT INTO `meal` (`id`, `name`, `description`, `imageUrl`, `dateTime`, `maxAmountOfParticipants`, `price`, `cookId`) VALUES" +
     "(1, 'Meal A', 'description', 'image url', NOW(), 5, 6.50, 1)," +
-    "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);"
+    "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);";
 
-describe('Login', () => {
-    before((done) => {
-        console.log(
-            'before: hier zorg je eventueel dat de precondities correct zijn'
-        )
-        console.log('before done')
-        done()
-    })
+describe("Users", () => {
 
-    describe('UC101 Login', () => {
-
+    describe("UC201 Create user", () => {
         beforeEach((done) => {
-            console.log('beforeEach called')
+            console.log("beforeEach called");
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
+                if (err) throw err;
 
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        connection.release()
+                        connection.release();
 
-                        if (error) throw error
-                        
-                        console.log('beforeEach done')
-                        done()
+                        if (error) throw error;
+
+                        console.log("beforeEach done");
+                        done();
                     }
-                )
-            })
-        })
-
-        // Response bevat JSON object met daarin generieke foutinformatie en code 400
-        it('TC-101-1 Required field is missing', (done) => {
-            chai.request(server)
-                .post('/api/auth/login')
-                .send({
-                    emailAdress: "m.vandullemen@server.nl",
-                    // password: "secret",
-                })
-                .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(422)
-                    res.should.be.an('object')
-
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('error', 'datetime')
-
-                    let { datetime, error } = res.body
-                    error.should.be
-                        .an('string')
-
-                    done()
-                })
-        })
-
-        it('TC-101-2 Unvalid email address', (done) => {
-            chai.request(server)
-                .post('/api/auth/login')
-                .send({
-                    emailAdress: 123,
-                    password: "secret",
-                })
-                .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(422)
-                    res.should.be.an('object')
-
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('datetime', 'error')
-
-                    let { datetime, error } = res.body
-                    error.should.be
-                        .an('string')
-
-                    done()
-                })
-        })
-
-        it('TC-101-3 Unvalid password', (done) => {
-            chai.request(server)
-                .post('/api/auth/login')
-                .send({
-                    emailAdress: "m.vandullemen@server.nl",
-                    password: "wrongwrong",
-                })
-                .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(401)
-                    res.should.be.an('object')
-
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('datetime', 'message')
-
-                    let { datetime, message } = res.body
-
-                    done()
-                })
-        })
-
-        // Response bevat JSON object met daarin generieke foutinformatie en code 404
-        it('TC-101-4 User doesnt exist', (done) => {
-            chai.request(server)
-                .post('/api/auth/login')
-                .send({
-                    emailAdress: "idontexist@gmail.com",
-                    password: "wrongwrong",
-                })
-                .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(401)
-                    res.should.be.an('object')
-
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('datetime', 'message')
-
-                    let { datetime, message } = res.body
-
-                    done()
-                })
-        })
-
-        // Response bevat JSON object met daarin volledige gebruikersinformatie en het gegenereerde token en code 200
-        it('TC-101-5 Successfully logged in', (done) => {
-            chai.request(server)
-                .post('/api/auth/login')
-                .send({
-                    emailAdress: "name@server.nl",
-                    password: "secret",
-                })
-                .end((err, res) => {
-                    res.should.have.status(200)
-                    res.should.be.an('object')
-
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'results')
-
-                    let { statusCode, results } = res.body
-                    statusCode.should.be.an('number')
-
-                    done()
-                })
-        })
-    })
-})
-
-describe('Users', () => {
-    //
-    // informatie over before, after, beforeEach, afterEach:
-    // https://mochajs.org/#hooks
-    //
-    before((done) => {
-        console.log(
-            'before: hier zorg je eventueel dat de precondities correct zijn'
-        )
-        console.log('before done')
-        done()
-    })
-
-    describe('UC201 Create user', () => {
-        
-        beforeEach((done) => {
-            console.log('beforeEach called')
-            dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
-
-                connection.query(
-                    CLEAR_DB + INSERT_USER,
-                    function (error, results, fields) {
-                        connection.release()
-
-                        if (error) throw error
-                        
-                        console.log('beforeEach done')
-                        done()
-                    }
-                )
-            })
-        })
+                );
+            });
+        });
 
         // Gebruiker is niet toegevoegd in het systeem. Responsestatus HTTP code 400 (Foute aanvraag) Response bevat JSON object met daarin generieke foutinformatie.
-        it('TC-201-1 should return valid error when required value is not present', (done) => {
+        it("TC-201-1 should return valid error when required value is not present", (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post("/api/user")
                 .send({
                     firstName: "Milan",
                     lastName: "Knol",
@@ -226,23 +66,23 @@ describe('Users', () => {
                     // emailAdress: "random@gmail.com"
                 })
                 .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(500)
-                    res.should.be.an('object')
+                    assert.ifError(err);
+                    res.should.have.status(500);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'message')
+                        .an("object")
+                        .that.has.all.keys("statusCode", "message");
 
-                    let { statusCode, message } = res.body
+                    let { statusCode, message } = res.body;
 
-                    done()
-                })
-        })
+                    done();
+                });
+        });
 
-        it('TC-201-2 should return a valid error when email is invalid', (done) => {
+        it("TC-201-2 should return a valid error when email is invalid", (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post("/api/user")
                 .send({
                     firstName: "Milan",
                     lastName: "Knol",
@@ -251,27 +91,27 @@ describe('Users', () => {
                     phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: 1234
+                    emailAdress: 1234,
                 })
                 .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(500)
-                    res.should.be.an('object')
+                    assert.ifError(err);
+                    res.should.have.status(500);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'message')
+                        .an("object")
+                        .that.has.all.keys("statusCode", "message");
 
-                    let { statusCode, message } = res.body
-                    statusCode.should.be.an('number')
+                    let { statusCode, message } = res.body;
+                    statusCode.should.be.an("number");
 
-                    done()
-                })
-        })
+                    done();
+                });
+        });
 
-        it ('TC-201-3 should return a valid error when password is invalid', (done) => {
+        it("TC-201-3 should return a valid error when password is invalid", (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post("/api/user")
                 .send({
                     firstName: "Milan",
                     lastName: "Knol",
@@ -280,29 +120,29 @@ describe('Users', () => {
                     phoneNumber: "0612345678",
                     city: "Breda",
                     password: 1234,
-                    emailAdress: "random@gmail.com"
+                    emailAdress: "random@gmail.com",
                 })
                 .end((err, res) => {
-                    assert.ifError(err)
-                    res.should.have.status(500)
-                    res.should.be.an('object')
+                    assert.ifError(err);
+                    res.should.have.status(500);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'message')
+                        .an("object")
+                        .that.has.all.keys("statusCode", "message");
 
-                    let { statusCode, message } = res.body
-                    statusCode.should.be.an('number')
-                    message.should.be
-                        .an('string')
+                    let { statusCode, message } = res.body;
+                    statusCode.should.be.an("number");
+                    message.should.be.an("string");
 
-                    done()
-                })
-        })
+                    done();
+                });
+        });
 
-        it ('TC-201-4 should return a valid error when a user already exists', (done) => { // email is unique, so why is it addable?
+        it("TC-201-4 should return a valid error when a user already exists", (done) => {
+            // email is unique, so why is it addable?
             chai.request(server)
-                .post('/api/user')
+                .post("/api/user")
                 .send({
                     firstName: "Milan",
                     lastName: "Knol",
@@ -311,29 +151,28 @@ describe('Users', () => {
                     phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "name@server.nl"
+                    emailAdress: "name@server.nl",
                 })
                 .end((err, res) => {
-                    res.should.have.status(500)
-                    res.should.be.an('object')
+                    res.should.have.status(500);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'message')
+                        .an("object")
+                        .that.has.all.keys("statusCode", "message");
 
-                    let { statusCode, message } = res.body
-                    statusCode.should.be.an('number')
-                    message.should.be
-                        .an('string')
+                    let { statusCode, message } = res.body;
+                    statusCode.should.be.an("number");
+                    message.should.be.an("string");
 
-                    done()
-                })
-        })
+                    done();
+                });
+        });
 
         // Gebruiker is toegevoegd in het systeem. Responsestatus HTTP code 200 Response bevat JSON object met daarin volledige gebruikersnaam en het gegenereerde token.
-        it ('TC-201-5 should add users to the database', (done) => {
+        it("TC-201-5 should add users to the database", (done) => {
             chai.request(server)
-                .post('/api/user')
+                .post("/api/user")
                 .send({
                     firstName: "Milan",
                     lastName: "Knol",
@@ -342,895 +181,608 @@ describe('Users', () => {
                     phoneNumber: "0612345678",
                     city: "Breda",
                     password: "secret",
-                    emailAdress: "random@gmail.com"
+                    emailAdress: "random@gmail.com",
                 })
                 .end((err, res) => {
-                    res.should.have.status(200)
-                    res.should.be.an('object')
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('results', 'statusCode')
+                        .an("object")
+                        .that.has.all.keys("results", "statusCode");
 
-                    let { results, statusCode } = res.body
-                    statusCode.should.be.an('number')
+                    let { results, statusCode } = res.body;
+                    statusCode.should.be.an("number");
 
-                    done()
-                })
-        })
-    })
+                    done();
+                });
+        });
+    });
 
-    describe('UC-202 showing users', () => {
+    describe("UC-202 showing users", () => {
         beforeEach((done) => {
-            console.log('beforeEach called')
+            console.log("beforeEach called");
 
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        connection.release()
-                        if (error) throw error
-                        console.log('beforeEach done')
-                        done()
+                        connection.release();
+                        if (error) throw error;
+                        console.log("beforeEach done");
+                        done();
                     }
-                )
-            })
-        })
+                );
+            });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met lege lijst.
-        it ('TC-202-1 show 0 users', (done) => {
+        it("TC-202-1 show 0 users", (done) => {
             chai.request(server)
-            .get('/api/user')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('results', 'statusCode')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("results", "statusCode");
 
-                let { results, statusCode } = res.body
-                statusCode.should.be.an('number')
+                    let { results, statusCode } = res.body;
+                    statusCode.should.be.an("number");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van twee gebruikers.
-        it ('TC-202-2 show 2 users', (done) => {
+        it("TC-202-2 show 2 users", (done) => {
             chai.request(server)
-            .get('/api/user')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "results");
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
-                results.should.be.an('array')
-                    .that.has.lengthOf(2)
+                    let { statusCode, results } = res.body;
+                    statusCode.should.be.an("number");
+                    results.should.be.an("array").that.has.lengthOf(2);
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met nul gebruikers.
-        it ('TC-202-3 show users on search term of nonexistent name', (done) => {
+        it("TC-202-3 show users on search term of nonexistent name", (done) => {
             chai.request(server)
-            .get('/api/user?firstName=idontexist')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user?firstName=idontexist")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "results");
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                    let { statusCode, results } = res.body;
+                    statusCode.should.be.an("number");
 
-                results.should.be.an('array')
-                    .that.has.lengthOf(0)
+                    results.should.be.an("array").that.has.lengthOf(0);
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
-        it ('TC-202-4 show users by using search term on the field active=false', (done) => {
+        it("TC-202-4 show users by using search term on the field active=false", (done) => {
             chai.request(server)
-            .get('/api/user?isActive=0')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user?isActive=0")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "results");
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                    let { statusCode, results } = res.body;
+                    statusCode.should.be.an("number");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
-        it ('TC-202-5 show users by using search term on the field active=true', (done) => {
+        it("TC-202-5 show users by using search term on the field active=true", (done) => {
             chai.request(server)
-            .get('/api/user?isActive=1')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user?isActive=1")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "results");
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                    let { statusCode, results } = res.body;
+                    statusCode.should.be.an("number");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
-        it ('TC-202-6 show users on search term of existent name', (done) => {
+        it("TC-202-6 show users on search term of existent name", (done) => {
             chai.request(server)
-            .get('/api/user?firstName=first')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user?firstName=first")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "results");
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                    let { statusCode, results } = res.body;
+                    statusCode.should.be.an("number");
 
-                done()
-            })
-        })
-    })
+                    done();
+                });
+        });
+    });
 
-    describe('UC-203 request personal user profile', () => {
+    describe("UC-203 request personal user profile", () => {
         beforeEach((done) => {
-            console.log('beforeEach called')
+            console.log("beforeEach called");
 
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        connection.release()
-                        if (error) throw error
-                        console.log('beforeEach done')
-                        done()
+                        connection.release();
+                        if (error) throw error;
+                        console.log("beforeEach done");
+                        done();
                     }
-                )
-            })
-        })
+                );
+            });
+        });
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-203-1 invalid token', (done) => {
+        it("TC-203-1 invalid token", (done) => {
             chai.request(server)
-            .post('/api/auth/login')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, "wrong")})
-            .end((err, res) => {
-                res.should.have.status(422)
-                res.should.be.an('object')
+                .post("/api/auth/login")
+                .set({
+                    Authorization: `Bearer` + jwt.sign({ userId: 1 }, "wrong"),
+                })
+                .end((err, res) => {
+                    res.should.have.status(422);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
+                    let { datetime, error } = res.body;
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
-        it ('TC-203-2 valid token and user exists', (done) => {
+        it("TC-203-2 valid token and user exists", (done) => {
             chai.request(server)
-            .get('/api/user/profile')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, "wrong")})
-            .end((err, res) => {
-                res.should.be.an('object')
+                .get("/api/user/profile")
+                .set({
+                    Authorization: `Bearer` + jwt.sign({ userId: 1 }, "wrong"),
+                })
+                .end((err, res) => {
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
+                    let { datetime, error } = res.body;
 
-                done()
-            })
-        })
-    })
+                    done();
+                });
+        });
+    });
 
-    describe('UC-204 details of a user', () => {
+    describe("UC-204 details of a user", () => {
         beforeEach((done) => {
-            console.log('beforeEach called')
+            console.log("beforeEach called");
 
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        connection.release()
-                        if (error) throw error
-                        console.log('beforeEach done')
-                        done()
+                        connection.release();
+                        if (error) throw error;
+                        console.log("beforeEach done");
+                        done();
                     }
-                )
-            })
-        })
+                );
+            });
+        });
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         // it ('TC-204-1 invalid token', (done) => {
-            
+
         //     done()
         // })       ------------> what if you want to view someone elses profile? my reasoning was not needing a token to view a profile, just your own profile.
         //                        you might want to view the details of another cook, like we programmed in the app.
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-204-2 user id doesnt exist', (done) => {
+        it("TC-204-2 user id doesnt exist", (done) => {
             chai.request(server)
-            .get('/api/user/50')
-            .end((err, res) => {
-                console.log(res.body)
-                res.should.be.an('object')
+                .get("/api/user/50")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    console.log(res.body);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'message')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "message");
 
-                let { statusCode, message } = res.body
-                statusCode.should.be.an('number')
+                    let { statusCode, message } = res.body;
+                    statusCode.should.be.an("number");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
-        it ('TC-204-3 user id exists', (done) => {
+        it("TC-204-3 user id exists", (done) => {
             chai.request(server)
-            .get('/api/user/1')
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
+                .get("/api/user/1")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("statusCode", "results");
 
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
+                    let { statusCode, results } = res.body;
+                    statusCode.should.be.an("number");
 
-                done()
-            })
-        })
-    })
+                    done();
+                });
+        });
+    });
 
-    describe('UC-205 updating a user', () => {
+    describe("UC-205 updating a user", () => {
         beforeEach((done) => {
-            console.log('beforeEach called')
+            console.log("beforeEach called");
 
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        connection.release()
-                        if (error) throw error
-                        console.log('beforeEach done')
-                        done()
+                        connection.release();
+                        if (error) throw error;
+                        console.log("beforeEach done");
+                        done();
                     }
-                )
-            })
-        })
+                );
+            });
+        });
 
         // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-205-1 required field is missing', (done) => {
+        it("TC-205-1 required field is missing", (done) => {
             chai.request(server)
-            .put('/api/user/1', {
-                // firstName: "Milan",
-                lastName: "Knol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: "0612345678",
-                city: "Breda",
-                password: "secret",
-                emailAdress: "random@gmail.com"
-            })
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                console.log(res.status)
-                console.log(res.body)
-                assert.ifError(err)
-                    res.should.have.status(401)
-                    res.should.be.an('object')
+                .put("/api/user/1", {
+                    // firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
+                    street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
+                    city: "Breda",
+                    password: "secret",
+                    emailAdress: "random@gmail.com",
+                })
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    console.log(res.status);
+                    console.log(res.body);
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('datetime', 'error')
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                    let { datetime, error } = res.body
-                    error.should.be
-                        .an('string')
+                    let { datetime, error } = res.body;
+                    error.should.be.an("string");
 
-                    done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-205-3 invalid phone number', (done) => {
+        it("TC-205-3 invalid phone number", (done) => {
             chai.request(server)
-            .put('/api/user/1', {
-                firstName: "Milan",
-                lastName: "Knol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: 123,
-                city: "Breda",
-                password: "secret",
-                emailAdress: "random@gmail.com"
-            })
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                console.log(res.status)
-                console.log(res.body)
-                assert.ifError(err)
-                    res.should.have.status(401)
-                    res.should.be.an('object')
+                .put("/api/user/1", {
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
+                    street: "Lovensdijkstraat 61",
+                    phoneNumber: 123,
+                    city: "Breda",
+                    password: "secret",
+                    emailAdress: "random@gmail.com",
+                })
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    console.log(res.status);
+                    console.log(res.body);
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('datetime', 'error')
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                    let { datetime, error } = res.body
-                    error.should.be
-                        .an('string')
+                    let { datetime, error } = res.body;
+                    error.should.be.an("string");
 
-                    done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-205-4 user doesnt exist', (done) => {
+        it("TC-205-4 user doesnt exist", (done) => {
             chai.request(server)
-            .put('/api/user/50000', {
-                firstName: "Milan",
-                lastName: "Knol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: 123,
-                city: "Breda",
-                password: "secret",
-                emailAdress: "random@gmail.com"
-            })
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                assert.ifError(err)
-                res.should.have.status(401)
-                res.should.be.an('object')
+                .put("/api/user/50000", {
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
+                    street: "Lovensdijkstraat 61",
+                    phoneNumber: 123,
+                    city: "Breda",
+                    password: "secret",
+                    emailAdress: "random@gmail.com",
+                })
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
-                error.should.be
-                    .an('string')
+                    let { datetime, error } = res.body;
+                    error.should.be.an("string");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-205-5 not logged in', (done) => {
+        it("TC-205-5 not logged in", (done) => {
             chai.request(server)
-            .put('/api/user/1', {
-                firstName: "Milan",
-                lastName: "Knol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: "0612345678",
-                city: "Breda",
-                password: "secret",
-                emailAdress: "random@gmail.com"
-            })
-            .end((err, res) => {
-                assert.ifError(err)
-                res.should.have.status(401)
-                res.should.be.an('object')
+                .put("/api/user/1", {
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
+                    street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
+                    city: "Breda",
+                    password: "secret",
+                    emailAdress: "random@gmail.com",
+                })
+                .end((err, res) => {
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
-                error.should.be
-                    .an('string')
-                    .that.contains('Authorization header missing!')
+                    let { datetime, error } = res.body;
+                    error.should.be
+                        .an("string")
+                        .that.contains("Authorization header missing!");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Gebruiker gewijzigd in database Responsestatus HTTP code 200 (OK) Response bevat JSON object met alle gegevens van de gebruiker.
-        it ('TC-205-6 user successfully updated', (done) => {
+        it("TC-205-6 user successfully updated", (done) => {
             chai.request(server)
-            .put('/api/user/1', {
-                firstName: "Milan",
-                lastName: "Knol",
-                isActive: 1,
-                street: "Lovensdijkstraat 61",
-                phoneNumber: "0612345678",
-                city: "Breda",
-                password: "secret",
-                emailAdress: "new@gmail.com"
-            })
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                console.log(res.body)
-                res.should.have.status(401)
-                res.should.be.an('object')
+                .put("/api/user/1", {
+                    firstName: "Milan",
+                    lastName: "Knol",
+                    isActive: 1,
+                    street: "Lovensdijkstraat 61",
+                    phoneNumber: "0612345678",
+                    city: "Breda",
+                    password: "secret",
+                    emailAdress: "new@gmail.com",
+                })
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    console.log(res.body);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
+                    let { datetime, error } = res.body;
 
-                done()
-            })
-        })
-    })
+                    done();
+                });
+        });
+    });
 
-    describe('UC-206 deleting a user', () => {
+    describe("UC-206 deleting a user", () => {
         beforeEach((done) => {
-            console.log('beforeEach called')
+            console.log("beforeEach called");
 
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER,
                     function (error, results, fields) {
-                        connection.release()
-                        if (error) throw error
-                        console.log('beforeEach done')
-                        done()
+                        connection.release();
+                        if (error) throw error;
+                        console.log("beforeEach done");
+                        done();
                     }
-                )
-            })
-        })
+                );
+            });
+        });
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-206-1 user doesnt exist', (done) => {
+        it("TC-206-1 user doesnt exist", (done) => {
             chai.request(server)
-            .delete('/api/user/50')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                assert.ifError(err)
-                res.should.have.status(401)
-                res.should.be.an('object')
+                .delete("/api/user/50")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
-                error.should.be
-                    .an('string')
+                    let { datetime, error } = res.body;
+                    error.should.be.an("string");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-206-2 not logged in', (done) => {
+        it("TC-206-2 not logged in", (done) => {
             chai.request(server)
-            .delete('/api/user/1')
-            .end((err, res) => {
-                assert.ifError(err)
-                res.should.have.status(401)
-                res.should.be.an('object')
+                .delete("/api/user/1")
+                .end((err, res) => {
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
-                error.should.be
-                    .an('string')
-                    .that.contains('Authorization header missing!')
+                    let { datetime, error } = res.body;
+                    error.should.be
+                        .an("string")
+                        .that.contains("Authorization header missing!");
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        it ('TC-206-3 actor is not the owner', (done) => {
+        it("TC-206-3 actor is not the owner", (done) => {
             chai.request(server)
-            .delete('/api/user/2')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                assert.ifError(err)
-                res.should.have.status(401)
-                res.should.be.an('object')
+                .delete("/api/user/2")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    assert.ifError(err);
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                let { datetime, error } = res.body
+                    let { datetime, error } = res.body;
 
-                done()
-            })
-        })
+                    done();
+                });
+        });
 
         // Gebruiker verwijderd uit database Responsestatus HTTP code 200 (OK)
-        it ('TC-206-4 user successfully deleted', (done) => {
+        it("TC-206-4 user successfully deleted", (done) => {
             chai.request(server)
-            .delete('/api/user/1')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(401)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
-
-                let { datetime, error } = res.body
-
-                done()
-            })
-        })
-    })
-})
-
-describe('Meals', () => {
-    beforeEach((done) => {
-        console.log('beforeEach called')
-
-        dbconnection.getConnection(function (err, connection) {
-            if (err) throw err
-            connection.query(
-                CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                function (error, results, fields) {
-                    connection.release()
-                    if (error) throw error
-                    console.log('beforeEach done')
-                    done()
-                }
-            )
-        })
-    })
-
-    describe('UC-301 Maaltijd aanmaken', () => {
-        beforeEach((done) => {
-            console.log('beforeEach called')
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-            dbconnection.getConnection(function (err, connection) {
-                if (err) throw err // not connected!
-                connection.query(
-                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                    function (error, results, fields) {
-                        // When done with the connection, release it.
-                        connection.release()
-                        // Handle error after the release.
-                        if (error) throw error
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
-                        console.log('beforeEach done')
-                        done()
-                    }
-                )
-            })
-        })
-
-        // code 400
-        it('TC-301-1 Verplicht veld ontbreekt', (done) => {
-            chai.request(server)
-                .post('/api/meal')
-                .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-                .send({
-                    "isActive": 1,
-                    "isVega": 1,
-                    "isVegan": 1,
-                    "isToTakeHome": 1,
-                    "maxAmountOfParticipants": 8,
-                    "price": 4,
-                    // "imageUrl": "randomUrl",
-                    // "cookId": 1,
-                    // "name": "Hihi",
-                    "description": "hihi",
+                .delete("/api/user/1")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    assert.ifError(err)
-
-                    res.should.have.status(401)
-                    res.should.be.an('object')
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
                     res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('datetime', 'error')
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                    let { datetime, error } = res.body
-                    
-                    done()
-                })
-        })
+                    let { datetime, error } = res.body;
 
-        // code 401
-        it('TC-301-2 Niet ingelogd', (done) => {
-            chai.request(server)
-                .get('/api/movie')
-                .send({
-                    "isActive": 1,
-                    "isVega": 1,
-                    "isVegan": 1,
-                    "isToTakeHome": 1,
-                    "maxAmountOfParticipants": 8,
-                    "price": 4,
-                    "imageUrl": "randomUrl",
-                    "cookId": 1,
-                    "name": "Hihi",
-                    "description": "hihi",
-                })
-                .end((err, res) => {
-                    res.should.have.status(401)
-                    res.should.be.an('object')
-
-                    res.body.should.be
-                        .an('object')
-                        .that.has.all.keys('statusCode', 'result')
-
-                    let { statusCode, result } = res.body
-                    statusCode.should.be.an('number')
-                    
-                    done()
-        })
-
-        // code 200
-        it('TC-301-3 Maaltijd succesvol toegevoegd', (done) => {
-            chai.request(server)
-            .post('/api/meal')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .send({
-                "isActive": 1,
-                "isVega": 1,
-                "isVegan": 1,
-                "isToTakeHome": 1,
-                "maxAmountOfParticipants": 8,
-                "price": 4,
-                "imageUrl": "randomUrl",
-                "cookId": 1,
-                "name": "Hihi",
-                "description": "hihi",
-            })
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
-
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
-                
-                done()
-            })
-        })
-    })
-
-    describe('UC-303 Lijst van maaltijden opvragen /api/meal', () => {
-        
-        beforeEach((done) => {
-            console.log('beforeEach called')
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-            dbconnection.getConnection(function (err, connection) {
-                if (err) throw err // not connected!
-                connection.query(
-                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                    function (error, results, fields) {
-                        // When done with the connection, release it.
-                        connection.release()
-                        // Handle error after the release.
-                        if (error) throw error
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
-                        console.log('beforeEach done')
-                        done()
-                    }
-                )
-            })
-        })
-
-        // code 200
-        it('TC-303-1 Lijst van maaltijden wordt succesvol geretourneerd', (done) => {
-            chai.request(server)
-            .get('/api/meal')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(401)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
-
-                let { datetime, error } = res.body
-                
-                done()
-            })
-        })
-    })
-
-    describe('UC-304 Details van een maaltijd opvragen', () => {
-        beforeEach((done) => {
-            console.log('beforeEach called')
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-            dbconnection.getConnection(function (err, connection) {
-                if (err) throw err // not connected!
-                connection.query(
-                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                    function (error, results, fields) {
-                        // When done with the connection, release it.
-                        connection.release()
-                        // Handle error after the release.
-                        if (error) throw error
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
-                        console.log('beforeEach done')
-                        done()
-                    }
-                )
-            })
-        })
-
-        // code 404
-        it('TC-304-1 Maaltijd bestaat niet', (done) => {
-            chai.request(server)
-            .get('/api/meal/50000')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(500)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'message')
-
-                let { statusCode, message } = res.body
-                statusCode.should.be.an('number')
-                
-                done()
-            })
-        })
-
-        // code 200
-        it('TC-304-2 Details van maaltijd geretourneerd', (done) => {
-            chai.request(server)
-            .get('/api/meal/1')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(200)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('statusCode', 'results')
-
-                let { statusCode, results } = res.body
-                statusCode.should.be.an('number')
-                
-                done()
-            })
-        })
-    })
-
-    describe('UC-305 Maaltijd verwijderen', () => {
-        beforeEach((done) => {
-            console.log('beforeEach called')
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-            dbconnection.getConnection(function (err, connection) {
-                if (err) throw err // not connected!
-                connection.query(
-                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                    function (error, results, fields) {
-                        // When done with the connection, release it.
-                        connection.release()
-                        // Handle error after the release.
-                        if (error) throw error
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
-                        console.log('beforeEach done')
-                        done()
-                    }
-                )
-            })
-        })
-
-        // code 401
-        it('TC-305-2 Niet ingelogd', (done) => {
-            chai.request(server)
-            .delete('/api/meal/1')
-            .end((err, res) => {
-                res.should.have.status(401)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
-
-                let { datetime, error } = res.body
-                
-                done()
-            })
-        })
-
-        // code 403
-        it('TC-305-3 Niet de eigenaar van de data', (done) => {
-            chai.request(server)
-            .delete('/api/meal/3')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(401)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
-
-                let { datetime, error } = res.body
-                
-                done()
-            })
-        })
-
-        // code 404
-        it('TC-305-4 Maaltijd bestaat niet', (done) => {
-            chai.request(server)
-            .delete('/api/meal/50000')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(401)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
-
-                let { datetime, error } = res.body
-                
-                done()
-            })
-        })
-
-        // code 200
-        it('TC-305-5 Maaltijd succesvol verwijderd', (done) => {
-            chai.request(server)
-            .delete('/api/meal/1')
-            .set({ "Authorization": `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey)})
-            .end((err, res) => {
-                res.should.have.status(401)
-                res.should.be.an('object')
-
-                res.body.should.be
-                    .an('object')
-                    .that.has.all.keys('datetime', 'error')
-
-                let { datetime, error } = res.body
-                
-                done()
-            })
-        })
-    })
-})
-})
+                    done();
+                });
+        });
+    });
+});
