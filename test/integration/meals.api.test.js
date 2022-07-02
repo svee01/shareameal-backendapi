@@ -100,6 +100,11 @@ describe("Meals", () => {
 
                     let { datetime, error } = res.body;
 
+                    datetime.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
+
                     done();
                 });
         });
@@ -107,7 +112,7 @@ describe("Meals", () => {
         // code 401
         it("TC-301-2 Niet ingelogd", (done) => {
             chai.request(server)
-                .get("/api/movie")
+                .post("/api/meal")
                 .send({
                     isActive: 1,
                     isVega: 1,
@@ -126,10 +131,14 @@ describe("Meals", () => {
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "result");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, result } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Authorization header missing!");
 
                     done();
                 });
@@ -164,228 +173,271 @@ describe("Meals", () => {
 
                         let { statusCode, results } = res.body;
                         statusCode.should.be.an("number");
+                        results.should.be
+                            .an("object")
+                            .that.has.all.keys(
+                                "fieldCount",
+                                "affectedRows",
+                                "insertId",
+                                "info",
+                                "serverStatus",
+                                "warningStatus"
+                            );
+
+                        let {
+                            fieldCount,
+                            affectedRows,
+                            insertId,
+                            info,
+                            serverStatus,
+                            warningStatus,
+                        } = results;
+
+                        fieldCount.should.be.an("number");
+                        affectedRows.should.be.an("number");
+                        insertId.should.be.an("number");
+                        info.should.be.an("string");
+                        serverStatus.should.be.an("number");
+                        warningStatus.should.be.an("number");
 
                         done();
                     });
             });
         });
+    });
 
-        describe("UC-303 Lijst van maaltijden opvragen /api/meal", () => {
-            beforeEach((done) => {
-                console.log("beforeEach called");
-                // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-                dbconnection.getConnection(function (err, connection) {
-                    if (err) throw err; // not connected!
-                    connection.query(
-                        CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                        function (error, results, fields) {
-                            // When done with the connection, release it.
-                            connection.release();
-                            // Handle error after the release.
-                            if (error) throw error;
-                            // Let op dat je done() pas aanroept als de query callback eindigt!
-                            console.log("beforeEach done");
-                            done();
-                        }
-                    );
-                });
-            });
-
-            // code 200
-            it("TC-303-1 Lijst van maaltijden wordt succesvol geretourneerd", (done) => {
-                chai.request(server)
-                    .get("/api/meal")
-                    .set({
-                        Authorization:
-                            `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
-                    })
-                    .end((err, res) => {
-                        res.should.have.status(401);
-                        res.should.be.an("object");
-
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("datetime", "error");
-
-                        let { datetime, error } = res.body;
-
+    describe("UC-303 Lijst van maaltijden opvragen /api/meal", () => {
+        beforeEach((done) => {
+            console.log("beforeEach called");
+            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err; // not connected!
+                connection.query(
+                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
+                    function (error, results, fields) {
+                        // When done with the connection, release it.
+                        connection.release();
+                        // Handle error after the release.
+                        if (error) throw error;
+                        // Let op dat je done() pas aanroept als de query callback eindigt!
+                        console.log("beforeEach done");
                         done();
-                    });
+                    }
+                );
             });
         });
 
-        describe("UC-304 Details van een maaltijd opvragen", () => {
-            beforeEach((done) => {
-                console.log("beforeEach called");
-                // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-                dbconnection.getConnection(function (err, connection) {
-                    if (err) throw err; // not connected!
-                    connection.query(
-                        CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                        function (error, results, fields) {
-                            // When done with the connection, release it.
-                            connection.release();
-                            // Handle error after the release.
-                            if (error) throw error;
-                            // Let op dat je done() pas aanroept als de query callback eindigt!
-                            console.log("beforeEach done");
-                            done();
-                        }
-                    );
+        // code 200
+        it("TC-303-1 Lijst van maaltijden wordt succesvol geretourneerd", (done) => {
+            chai.request(server)
+                .get("/api/meal")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
+
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
+
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
+
+                    done();
                 });
-            });
+        });
+    });
 
-            // code 404
-            it("TC-304-1 Maaltijd bestaat niet", (done) => {
-                chai.request(server)
-                    .get("/api/meal/50000")
-                    .set({
-                        Authorization:
-                            `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
-                    })
-                    .end((err, res) => {
-                        res.should.have.status(401);
-                        res.should.be.an("object");
-
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("statusCode", "message");
-
-                        let { statusCode, message } = res.body;
-                        statusCode.should.be.an("number");
-
+    describe("UC-304 Details van een maaltijd opvragen", () => {
+        beforeEach((done) => {
+            console.log("beforeEach called");
+            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err; // not connected!
+                connection.query(
+                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
+                    function (error, results, fields) {
+                        // When done with the connection, release it.
+                        connection.release();
+                        // Handle error after the release.
+                        if (error) throw error;
+                        // Let op dat je done() pas aanroept als de query callback eindigt!
+                        console.log("beforeEach done");
                         done();
-                    });
-            });
-
-            // code 200
-            it("TC-304-2 Details van maaltijd geretourneerd", (done) => {
-                chai.request(server)
-                    .get("/api/meal/1")
-                    .set({
-                        Authorization:
-                            `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
-                    })
-                    .end((err, res) => {
-                        res.should.have.status(200);
-                        res.should.be.an("object");
-
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("statusCode", "results");
-
-                        let { statusCode, results } = res.body;
-                        statusCode.should.be.an("number");
-
-                        done();
-                    });
+                    }
+                );
             });
         });
 
-        describe("UC-305 Maaltijd verwijderen", () => {
-            beforeEach((done) => {
-                console.log("beforeEach called");
-                // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
-                dbconnection.getConnection(function (err, connection) {
-                    if (err) throw err; // not connected!
-                    connection.query(
-                        CLEAR_DB + INSERT_USER + INSERT_MEALS,
-                        function (error, results, fields) {
-                            // When done with the connection, release it.
-                            connection.release();
-                            // Handle error after the release.
-                            if (error) throw error;
-                            // Let op dat je done() pas aanroept als de query callback eindigt!
-                            console.log("beforeEach done");
-                            done();
-                        }
-                    );
+        // code 404
+        it("TC-304-1 Maaltijd bestaat niet", (done) => {
+            chai.request(server)
+                .get("/api/meal/50000")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
+
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("error", "datetime");
+
+                    let { error, datetime } = res.body;
+
+                    error.should.be.an("string");
+                    datetime.should.be.an("string");
+
+                    done();
                 });
-            });
+        });
 
-            // code 401
-            it("TC-305-2 Niet ingelogd", (done) => {
-                chai.request(server)
-                    .delete("/api/meal/1")
-                    .end((err, res) => {
-                        res.should.have.status(401);
-                        res.should.be.an("object");
+        // code 200
+        it("TC-304-2 Details van maaltijd geretourneerd", (done) => {
+            chai.request(server)
+                .get("/api/meal/1")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("datetime", "error");
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                        let { datetime, error } = res.body;
+                    let { datetime, error } = res.body;
 
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
+
+                    done();
+                });
+        });
+    });
+
+    describe("UC-305 Maaltijd verwijderen", () => {
+        beforeEach((done) => {
+            console.log("beforeEach called");
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err;
+                connection.query(
+                    CLEAR_DB + INSERT_USER + INSERT_MEALS,
+                    function (error, results, fields) {
+                        connection.release();
+                        if (error) throw error;
+                        console.log("beforeEach done");
                         done();
-                    });
+                    }
+                );
             });
+        });
 
-            // code 403
-            it("TC-305-3 Niet de eigenaar van de data", (done) => {
-                chai.request(server)
-                    .delete("/api/meal/3")
-                    .set({
-                        Authorization:
-                            `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
-                    })
-                    .end((err, res) => {
-                        res.should.have.status(401);
-                        res.should.be.an("object");
+        // code 401
+        it("TC-305-2 Niet ingelogd", (done) => {
+            chai.request(server)
+                .delete("/api/meal/1")
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("datetime", "error");
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                        let { datetime, error } = res.body;
+                    let { datetime, error } = res.body;
 
-                        done();
-                    });
-            });
+                    datetime.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Authorization header missing!");
 
-            // code 404
-            it("TC-305-4 Maaltijd bestaat niet", (done) => {
-                chai.request(server)
-                    .delete("/api/meal/50000")
-                    .set({
-                        Authorization:
-                            `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
-                    })
-                    .end((err, res) => {
-                        res.should.have.status(401);
-                        res.should.be.an("object");
+                    done();
+                });
+        });
 
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("datetime", "error");
+        // code 403
+        it("TC-305-3 Niet de eigenaar van de data", (done) => {
+            chai.request(server)
+                .delete("/api/meal/3")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                        let { datetime, error } = res.body;
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
 
-                        done();
-                    });
-            });
+                    let { datetime, error } = res.body;
 
-            // code 200
-            it("TC-305-5 Maaltijd succesvol verwijderd", (done) => {
-                chai.request(server)
-                    .delete("/api/meal/1")
-                    .set({
-                        Authorization:
-                            `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
-                    })
-                    .end((err, res) => {
-                        res.should.have.status(401);
-                        res.should.be.an("object");
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
-                        res.body.should.be
-                            .an("object")
-                            .that.has.all.keys("datetime", "error");
+                    done();
+                });
+        });
 
-                        let { datetime, error } = res.body;
+        // code 404
+        it("TC-305-4 Maaltijd bestaat niet", (done) => {
+            chai.request(server)
+                .delete("/api/meal/50000")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
 
-                        done();
-                    });
-            });
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
+
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
+
+                    done();
+                });
+        });
+
+        // code 200
+        it("TC-305-5 Maaltijd succesvol verwijderd", (done) => {
+            chai.request(server)
+                .delete("/api/meal/1")
+                .set({
+                    Authorization:
+                        `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
+                })
+                .end((err, res) => {
+                    res.should.have.status(401);
+                    res.should.be.an("object");
+
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
+
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
+
+                    done();
+                });
         });
     });
 });

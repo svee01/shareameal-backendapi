@@ -30,7 +30,6 @@ const INSERT_MEALS =
     "(2, 'Meal B', 'description', 'image url', NOW(), 5, 6.50, 1);";
 
 describe("Users", () => {
-
     describe("UC201 Create user", () => {
         beforeEach((done) => {
             console.log("beforeEach called");
@@ -76,6 +75,9 @@ describe("Users", () => {
 
                     let { statusCode, message } = res.body;
 
+                    statusCode.should.be.an("number");
+                    message.should.be.an("string").that.contains("object");
+
                     done();
                 });
         });
@@ -104,6 +106,7 @@ describe("Users", () => {
 
                     let { statusCode, message } = res.body;
                     statusCode.should.be.an("number");
+                    message.should.be.an("string").that.contains("object");
 
                     done();
                 });
@@ -132,15 +135,15 @@ describe("Users", () => {
                         .that.has.all.keys("statusCode", "message");
 
                     let { statusCode, message } = res.body;
+
                     statusCode.should.be.an("number");
-                    message.should.be.an("string");
+                    message.should.be.an("string").that.contains("object");
 
                     done();
                 });
         });
 
         it("TC-201-4 should return a valid error when a user already exists", (done) => {
-            // email is unique, so why is it addable?
             chai.request(server)
                 .post("/api/user")
                 .send({
@@ -163,7 +166,7 @@ describe("Users", () => {
 
                     let { statusCode, message } = res.body;
                     statusCode.should.be.an("number");
-                    message.should.be.an("string");
+                    message.should.be.an("string").that.contains("object");
 
                     done();
                 });
@@ -193,6 +196,32 @@ describe("Users", () => {
 
                     let { results, statusCode } = res.body;
                     statusCode.should.be.an("number");
+                    results.should.be
+                        .an("object")
+                        .that.has.all.keys(
+                            "fieldCount",
+                            "affectedRows",
+                            "insertId",
+                            "info",
+                            "serverStatus",
+                            "warningStatus"
+                        );
+
+                    let {
+                        fieldCount,
+                        affectedRows,
+                        insertId,
+                        info,
+                        serverStatus,
+                        warningStatus,
+                    } = results;
+
+                    fieldCount.should.be.an("number");
+                    affectedRows.should.be.an("number");
+                    insertId.should.be.an("number");
+                    info.should.be.an("string");
+                    serverStatus.should.be.an("number");
+                    warningStatus.should.be.an("number");
 
                     done();
                 });
@@ -219,6 +248,14 @@ describe("Users", () => {
 
         // Responsestatus HTTP code 200 Response bevat JSON object met lege lijst.
         it("TC-202-1 show 0 users", (done) => {
+            dbconnection.getConnection(function (err, connection) {
+                if (err) throw err;
+                connection.query(CLEAR_DB, function (error, results, fields) {
+                    connection.release();
+                    if (error) throw error;
+                });
+            });
+
             chai.request(server)
                 .get("/api/user")
                 .set({
@@ -226,15 +263,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("results", "statusCode");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { results, statusCode } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -249,16 +288,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "results");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, results } = res.body;
-                    statusCode.should.be.an("number");
-                    results.should.be.an("array").that.has.lengthOf(2);
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -273,17 +313,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "results");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, results } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
 
-                    results.should.be.an("array").that.has.lengthOf(0);
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -298,15 +338,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "results");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, results } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -321,15 +363,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "results");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, results } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -344,15 +388,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "results");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, results } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -380,19 +426,19 @@ describe("Users", () => {
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-203-1 invalid token", (done) => {
             chai.request(server)
-                .post("/api/auth/login")
-                .set({
-                    Authorization: `Bearer` + jwt.sign({ userId: 1 }, "wrong"),
-                })
+                .post("/api/user/profile")
                 .end((err, res) => {
-                    res.should.have.status(422);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("datetime", "error");
+                        .that.has.all.keys("result", "statusCode");
 
-                    let { datetime, error } = res.body;
+                    let { result, statusCode } = res.body;
+
+                    result.should.be.an("string");
+                    statusCode.should.be.an("number");
 
                     done();
                 });
@@ -406,6 +452,7 @@ describe("Users", () => {
                     Authorization: `Bearer` + jwt.sign({ userId: 1 }, "wrong"),
                 })
                 .end((err, res) => {
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
@@ -413,6 +460,11 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -438,11 +490,30 @@ describe("Users", () => {
         });
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
-        // it ('TC-204-1 invalid token', (done) => {
+        it("TC-204-1 invalid token", (done) => {
+            chai.request(server)
+                .get("/api/user/1")
+                .set({
+                    Authorization: `Bearer` + jwt.sign({ userId: 1 }, "wrong"),
+                })
+                .end((err, res) => {
+                    console.log(res.body);
+                    res.should.be.an("object");
 
-        //     done()
-        // })       ------------> what if you want to view someone elses profile? my reasoning was not needing a token to view a profile, just your own profile.
-        //                        you might want to view the details of another cook, like we programmed in the app.
+                    res.body.should.be
+                        .an("object")
+                        .that.has.all.keys("datetime", "error");
+
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
+
+                    done();
+                });
+        });
 
         // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-204-2 user id doesnt exist", (done) => {
@@ -453,15 +524,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    console.log(res.body);
                     res.should.be.an("object");
+                    res.should.have.status(401);
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "message");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, message } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -476,15 +549,17 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    res.should.have.status(200);
+                    res.should.have.status(401);
                     res.should.be.an("object");
 
                     res.body.should.be
                         .an("object")
-                        .that.has.all.keys("statusCode", "results");
+                        .that.has.all.keys("datetime", "error");
 
-                    let { statusCode, results } = res.body;
-                    statusCode.should.be.an("number");
+                    let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -527,8 +602,6 @@ describe("Users", () => {
                         `Bearer` + jwt.sign({ userId: 1 }, jwtSecretKey),
                 })
                 .end((err, res) => {
-                    console.log(res.status);
-                    console.log(res.body);
                     assert.ifError(err);
                     res.should.have.status(401);
                     res.should.be.an("object");
@@ -538,7 +611,11 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
-                    error.should.be.an("string");
+
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
+                    datetime.should.be.an("string");
 
                     done();
                 });
@@ -573,7 +650,11 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
-                    error.should.be.an("string");
+
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
+                    datetime.should.be.an("string");
 
                     done();
                 });
@@ -606,7 +687,9 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
                     error.should.be.an("string");
+                    datetime.should.be.an("string");
 
                     done();
                 });
@@ -635,6 +718,8 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
                     error.should.be
                         .an("string")
                         .that.contains("Authorization header missing!");
@@ -670,6 +755,9 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });
@@ -712,6 +800,8 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
                     error.should.be.an("string");
 
                     done();
@@ -732,6 +822,8 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
                     error.should.be
                         .an("string")
                         .that.contains("Authorization header missing!");
@@ -759,6 +851,11 @@ describe("Users", () => {
 
                     let { datetime, error } = res.body;
 
+                    datetime.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
+
                     done();
                 });
         });
@@ -780,6 +877,9 @@ describe("Users", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
+
+                    datetime.should.be.an("string");
+                    error.should.be.an("string");
 
                     done();
                 });

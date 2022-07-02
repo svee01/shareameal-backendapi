@@ -68,7 +68,11 @@ describe("Login", () => {
                         .that.has.all.keys("error", "datetime");
 
                     let { datetime, error } = res.body;
-                    error.should.be.an("string");
+
+                    error.should.be
+                        .an("string")
+                        .that.contains("password must be a string.");
+                    datetime.should.be.an("string");
 
                     done();
                 });
@@ -91,7 +95,11 @@ describe("Login", () => {
                         .that.has.all.keys("datetime", "error");
 
                     let { datetime, error } = res.body;
-                    error.should.be.an("string");
+
+                    error.should.be
+                        .an("string")
+                        .that.contains("email must be a string.");
+                    datetime.should.be.an("string");
 
                     done();
                 });
@@ -114,6 +122,11 @@ describe("Login", () => {
                         .that.has.all.keys("datetime", "message");
 
                     let { datetime, message } = res.body;
+
+                    datetime.should.be.an("string");
+                    message.should.be
+                        .an("string")
+                        .that.contains("User not found or password invalid");
 
                     done();
                 });
@@ -138,6 +151,11 @@ describe("Login", () => {
 
                     let { datetime, message } = res.body;
 
+                    datetime.should.be.an("string");
+                    message.should.be
+                        .an("string")
+                        .that.contains("User not found or password invalid");
+
                     done();
                 });
         });
@@ -159,7 +177,26 @@ describe("Login", () => {
                         .that.has.all.keys("statusCode", "results");
 
                     let { statusCode, results } = res.body;
+
                     statusCode.should.be.an("number");
+                    results.should.be
+                        .an("object")
+                        .that.has.all.keys(
+                            "id",
+                            "emailAdress",
+                            "firstName",
+                            "lastName",
+                            "token"
+                        );
+
+                    let { id, emailAdress, firstName, lastName, token } =
+                        results;
+
+                    id.should.be.an("number");
+                    emailAdress.should.be.an("string");
+                    firstName.should.be.an("string");
+                    lastName.should.be.an("string");
+                    token.should.be.an("string");
 
                     done();
                 });
