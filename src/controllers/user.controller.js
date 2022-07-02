@@ -93,7 +93,7 @@ module.exports = {
                 function (error, results, fields) {
                     connection.release();
 
-                    if (results.length == 0) {
+                    if (JSON.parse("[{},{}]").length == 0) {
                         next({
                             statusCode: 404,
                             error: "User ID does not exist",
