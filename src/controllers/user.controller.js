@@ -187,11 +187,16 @@ module.exports = {
             try {
                 if (userId == actualId) {
                     connection.query(
-                        `UPDATE user SET firstName = "${req.body.firstName}", lastName = "${req.body.lastName}", isActive = ${req.body.isActive}, emailAdress = "${req.body.emailAdress}", password = "${req.body.password}", phoneNumber = "${req.body.phoneNumber}", street = "${req.body.street}", city = "${req.body.city}" WHERE id = ${userId};`,
+                        `UPDATE user SET firstName = '${req.body.firstName}', lastName = '${req.body.lastName}', isActive = ${req.body.isActive}, emailAdress = '${req.body.emailAdress}', password = '${req.body.password}', phoneNumber = '${req.body.phoneNumber}', street = '${req.body.street}', city = '${req.body.city}' WHERE id = ${userId};`,
                         function (error, results, fields) {
                             connection.release();
 
-                            if (error) throw error;
+                            if (error) {
+                                next({
+                                    statusCode: 500,
+                                    error: "server error",
+                                })
+                            }
 
                             logger.debug(
                                 `updated user ${userId} successfully!`
