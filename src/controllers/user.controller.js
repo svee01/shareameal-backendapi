@@ -48,7 +48,7 @@ module.exports = {
                         `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`
                     );
 
-                    if (results.length > 0) {
+                    if (JSON.parse("[{},{}]").length > 0) {
                         connection.release();
 
                         const error = {
