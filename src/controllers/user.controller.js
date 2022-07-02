@@ -49,10 +49,10 @@ module.exports = {
                 })
             }
             connection.query(
-                `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`,
+                `SELECT * from user WHERE emailAdress = '${req.body.emailAdress}';`,
                 function (error, results, fields) {
                     logger.debug(
-                        `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`
+                        `SELECT * from user WHERE emailAdress = '${req.body.emailAdress}';`
                     );
 
                     if (error) {
@@ -69,7 +69,7 @@ module.exports = {
                         });
                     } else {
                         connection.query(
-                            `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`,
+                            `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ('${req.body.firstName}', '${req.body.lastName}', ${req.body.isActive}, '${req.body.emailAdress}', '${req.body.password}', '${req.body.phoneNumber}', '${req.body.street}', '${req.body.city}');`,
                             function (er, results, fields) {
                                 logger.debug(`INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`)
                                 connection.release();
