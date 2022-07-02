@@ -41,6 +41,13 @@ module.exports = {
     createUser: (req, res, next) => {
         logger.debug("createUser aangeroepen");
         dbconnection.getConnection(function (err, connection) {
+            if (err) {
+                logger.debug(err);
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                })
+            }
             connection.query(
                 `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`,
                 function (error, results, fields) {
@@ -48,32 +55,37 @@ module.exports = {
                         `SELECT * from user WHERE emailAdress = "${req.body.emailAdress}";`
                     );
 
-                    if (JSON.parse("[{},{}]").length > 0) {
-                        connection.release();
-
-                        const error = {
+                    if (error) {
+                        logger.debug(error);
+                        next({
+                            statusCode: 500,
+                            error: "server error",
+                        });
+                    } else if (results.length > 0) {
+                        logger.debug(results.length);
+                        next({
                             statusCode: 400,
                             error: "user already exists",
-                        };
-
-                        next(error);
+                        });
                     } else {
                         connection.query(
                             `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`,
-                            function (error, results, fields) {
+                            function (er, results, fields) {
+                                logger.debug(`INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`)
                                 connection.release();
 
-                                if (error) {
+                                if (er) {
+                                    logger.debug(er);
                                     next({
                                         statusCode: 401,
                                         error: "something went wrong with the variables",
                                     });
+                                } else {
+                                    res.status(200).json({
+                                        statusCode: 200,
+                                        results: results,
+                                    });
                                 }
-
-                                res.status(200).json({
-                                    statusCode: 200,
-                                    results: results,
-                                });
                             }
                         );
                     }
@@ -93,7 +105,7 @@ module.exports = {
                 function (error, results, fields) {
                     connection.release();
 
-                    if (JSON.parse("[{},{}]").length == 0) {
+                    if (results.length == 0) {
                         next({
                             statusCode: 404,
                             error: "User ID does not exist",

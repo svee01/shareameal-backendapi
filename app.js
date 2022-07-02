@@ -30,7 +30,7 @@ app.all("*", (req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    logger.debug("Error handler called.");
+    logger.debug(err);
     res.status(500).json({
         statusCode: 500,
         message: err.toString(),
