@@ -79,12 +79,12 @@ module.exports = {
         let cookId = req.userId;
         let price = parseFloat(req.body.price);
         logger.debug(
-            `${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${price}, "${req.body.imageUrl}", ${cookId}, "${req.body.name}", "${req.body.description}"`
+            `${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${price}, '${req.body.imageUrl}', ${cookId}, '${req.body.name}', '${req.body.description}'`
         );
         dbconnection.getConnection(function (err, connection) {
             if (err) throw err;
             connection.query(
-                `INSERT INTO meal (isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${req.body.price}, "${req.body.imageUrl}", ${cookId}, "${req.body.name}", "${req.body.description}");`,
+                `INSERT INTO meal (isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${req.body.price}, '${req.body.imageUrl}', ${cookId}, '${req.body.name}', '${req.body.description}');`,
                 function (error, results, fields) {
                     logger.debug(results);
                     logger.debug(error);
