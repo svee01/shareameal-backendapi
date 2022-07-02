@@ -50,17 +50,13 @@ describe("Meals", () => {
     describe("UC-301 Maaltijd aanmaken", () => {
         beforeEach((done) => {
             console.log("beforeEach called");
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err; // not connected!
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER + INSERT_MEALS,
                     function (error, results, fields) {
-                        // When done with the connection, release it.
                         connection.release();
-                        // Handle error after the release.
                         if (error) throw error;
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
                         console.log("beforeEach done");
                         done();
                     }
@@ -68,7 +64,6 @@ describe("Meals", () => {
             });
         });
 
-        // code 400
         it("TC-301-1 Verplicht veld ontbreekt", (done) => {
             chai.request(server)
                 .post("/api/meal")
@@ -109,7 +104,6 @@ describe("Meals", () => {
                 });
         });
 
-        // code 401
         it("TC-301-2 Niet ingelogd", (done) => {
             chai.request(server)
                 .post("/api/meal")
@@ -143,7 +137,6 @@ describe("Meals", () => {
                     done();
                 });
 
-            // code 200
             it("TC-301-3 Maaltijd succesvol toegevoegd", (done) => {
                 chai.request(server)
                     .post("/api/meal")
@@ -209,17 +202,13 @@ describe("Meals", () => {
     describe("UC-303 Lijst van maaltijden opvragen /api/meal", () => {
         beforeEach((done) => {
             console.log("beforeEach called");
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err; // not connected!
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER + INSERT_MEALS,
                     function (error, results, fields) {
-                        // When done with the connection, release it.
                         connection.release();
-                        // Handle error after the release.
                         if (error) throw error;
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
                         console.log("beforeEach done");
                         done();
                     }
@@ -227,7 +216,6 @@ describe("Meals", () => {
             });
         });
 
-        // code 200
         it("TC-303-1 Lijst van maaltijden wordt succesvol geretourneerd", (done) => {
             chai.request(server)
                 .get("/api/meal")
@@ -256,17 +244,13 @@ describe("Meals", () => {
     describe("UC-304 Details van een maaltijd opvragen", () => {
         beforeEach((done) => {
             console.log("beforeEach called");
-            // maak de testdatabase opnieuw aan zodat we onze testen kunnen uitvoeren.
             dbconnection.getConnection(function (err, connection) {
-                if (err) throw err; // not connected!
+                if (err) throw err;
                 connection.query(
                     CLEAR_DB + INSERT_USER + INSERT_MEALS,
                     function (error, results, fields) {
-                        // When done with the connection, release it.
                         connection.release();
-                        // Handle error after the release.
                         if (error) throw error;
-                        // Let op dat je done() pas aanroept als de query callback eindigt!
                         console.log("beforeEach done");
                         done();
                     }
@@ -274,7 +258,6 @@ describe("Meals", () => {
             });
         });
 
-        // code 404
         it("TC-304-1 Maaltijd bestaat niet", (done) => {
             chai.request(server)
                 .get("/api/meal/50000")
@@ -299,7 +282,6 @@ describe("Meals", () => {
                 });
         });
 
-        // code 200
         it("TC-304-2 Details van maaltijd geretourneerd", (done) => {
             chai.request(server)
                 .get("/api/meal/1")
@@ -342,7 +324,6 @@ describe("Meals", () => {
             });
         });
 
-        // code 401
         it("TC-305-2 Niet ingelogd", (done) => {
             chai.request(server)
                 .delete("/api/meal/1")
@@ -365,7 +346,6 @@ describe("Meals", () => {
                 });
         });
 
-        // code 403
         it("TC-305-3 Niet de eigenaar van de data", (done) => {
             chai.request(server)
                 .delete("/api/meal/3")
@@ -390,7 +370,6 @@ describe("Meals", () => {
                 });
         });
 
-        // code 404
         it("TC-305-4 Maaltijd bestaat niet", (done) => {
             chai.request(server)
                 .delete("/api/meal/50000")
@@ -415,7 +394,6 @@ describe("Meals", () => {
                 });
         });
 
-        // code 200
         it("TC-305-5 Maaltijd succesvol verwijderd", (done) => {
             chai.request(server)
                 .delete("/api/meal/1")

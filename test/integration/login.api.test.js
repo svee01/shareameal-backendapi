@@ -50,7 +50,6 @@ describe("Login", () => {
             });
         });
 
-        // Response bevat JSON object met daarin generieke foutinformatie en code 400
         it("TC-101-1 Required field is missing", (done) => {
             chai.request(server)
                 .post("/api/auth/login")
@@ -132,7 +131,6 @@ describe("Login", () => {
                 });
         });
 
-        // Response bevat JSON object met daarin generieke foutinformatie en code 404
         it("TC-101-4 User doesnt exist", (done) => {
             chai.request(server)
                 .post("/api/auth/login")
@@ -160,7 +158,6 @@ describe("Login", () => {
                 });
         });
 
-        // Response bevat JSON object met daarin volledige gebruikersinformatie en het gegenereerde token en code 200
         it("TC-101-5 Successfully logged in", (done) => {
             chai.request(server)
                 .post("/api/auth/login")

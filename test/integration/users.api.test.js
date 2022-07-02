@@ -50,7 +50,6 @@ describe("Users", () => {
             });
         });
 
-        // Gebruiker is niet toegevoegd in het systeem. Responsestatus HTTP code 400 (Foute aanvraag) Response bevat JSON object met daarin generieke foutinformatie.
         it("TC-201-1 should return valid error when required value is not present", (done) => {
             chai.request(server)
                 .post("/api/user")
@@ -172,7 +171,6 @@ describe("Users", () => {
                 });
         });
 
-        // Gebruiker is toegevoegd in het systeem. Responsestatus HTTP code 200 Response bevat JSON object met daarin volledige gebruikersnaam en het gegenereerde token.
         it("TC-201-5 should add users to the database", (done) => {
             chai.request(server)
                 .post("/api/user")
@@ -246,7 +244,6 @@ describe("Users", () => {
             });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met lege lijst.
         it("TC-202-1 show 0 users", (done) => {
             dbconnection.getConnection(function (err, connection) {
                 if (err) throw err;
@@ -279,7 +276,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van twee gebruikers.
         it("TC-202-2 show 2 users", (done) => {
             chai.request(server)
                 .get("/api/user")
@@ -304,7 +300,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met nul gebruikers.
         it("TC-202-3 show users on search term of nonexistent name", (done) => {
             chai.request(server)
                 .get("/api/user?firstName=idontexist")
@@ -329,7 +324,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
         it("TC-202-4 show users by using search term on the field active=false", (done) => {
             chai.request(server)
                 .get("/api/user?isActive=0")
@@ -354,7 +348,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
         it("TC-202-5 show users by using search term on the field active=true", (done) => {
             chai.request(server)
                 .get("/api/user?isActive=1")
@@ -379,7 +372,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruikers.
         it("TC-202-6 show users on search term of existent name", (done) => {
             chai.request(server)
                 .get("/api/user?firstName=first")
@@ -423,7 +415,6 @@ describe("Users", () => {
             });
         });
 
-        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-203-1 invalid token", (done) => {
             chai.request(server)
                 .post("/api/user/profile")
@@ -444,7 +435,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
         it("TC-203-2 valid token and user exists", (done) => {
             chai.request(server)
                 .get("/api/user/profile")
@@ -489,7 +479,6 @@ describe("Users", () => {
             });
         });
 
-        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-204-1 invalid token", (done) => {
             chai.request(server)
                 .get("/api/user/1")
@@ -515,7 +504,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-204-2 user id doesnt exist", (done) => {
             chai.request(server)
                 .get("/api/user/50")
@@ -540,7 +528,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 200 Response bevat JSON object met gegevens van gebruiker.
         it("TC-204-3 user id exists", (done) => {
             chai.request(server)
                 .get("/api/user/1")
@@ -584,7 +571,6 @@ describe("Users", () => {
             });
         });
 
-        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-205-1 required field is missing", (done) => {
             chai.request(server)
                 .put("/api/user/1", {
@@ -621,7 +607,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-205-3 invalid phone number", (done) => {
             chai.request(server)
                 .put("/api/user/1", {
@@ -660,7 +645,6 @@ describe("Users", () => {
                 });
         });
 
-        // Responsestatus HTTP code 400 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-205-4 user doesnt exist", (done) => {
             chai.request(server)
                 .put("/api/user/50000", {
@@ -695,7 +679,6 @@ describe("Users", () => {
                 });
         });
 
-        // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-205-5 not logged in", (done) => {
             chai.request(server)
                 .put("/api/user/1", {
@@ -728,7 +711,6 @@ describe("Users", () => {
                 });
         });
 
-        // Gebruiker gewijzigd in database Responsestatus HTTP code 200 (OK) Response bevat JSON object met alle gegevens van de gebruiker.
         it("TC-205-6 user successfully updated", (done) => {
             chai.request(server)
                 .put("/api/user/1", {
@@ -782,7 +764,6 @@ describe("Users", () => {
             });
         });
 
-        // Responsestatus HTTP code 404 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-206-1 user doesnt exist", (done) => {
             chai.request(server)
                 .delete("/api/user/50")
@@ -808,7 +789,6 @@ describe("Users", () => {
                 });
         });
 
-        // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-206-2 not logged in", (done) => {
             chai.request(server)
                 .delete("/api/user/1")
@@ -832,7 +812,6 @@ describe("Users", () => {
                 });
         });
 
-        // Gebruiker is niet toegevoegd Responsestatus HTTP code 401 Response bevat JSON object met daarin generieke foutinformatie, met specifieke foutmelding.
         it("TC-206-3 actor is not the owner", (done) => {
             chai.request(server)
                 .delete("/api/user/2")
@@ -860,7 +839,6 @@ describe("Users", () => {
                 });
         });
 
-        // Gebruiker verwijderd uit database Responsestatus HTTP code 200 (OK)
         it("TC-206-4 user successfully deleted", (done) => {
             chai.request(server)
                 .delete("/api/user/1")
