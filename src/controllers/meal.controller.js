@@ -7,7 +7,12 @@ module.exports = {
         const mealId = req.params.id;
         logger.debug(`Meal met ID ${mealId} gezocht`);
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err;
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
 
             connection.query(
                 `SELECT * FROM meal WHERE id = ${mealId};`,
@@ -53,7 +58,12 @@ module.exports = {
         logger.debug(`queryString = ${queryString}`);
 
         dbconnection.getConnection(function (err, connection) {
-            if (err) next(err);
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
 
             connection.query(
                 queryString,
@@ -61,7 +71,12 @@ module.exports = {
                 function (error, results, fields) {
                     connection.release();
 
-                    if (error) next(error);
+                    if (error) {
+                        next({
+                            statusCode: 500,
+                            error: "server error",
+                        });
+                    }
 
                     logger.debug("#results = ", results.length);
                     res.status(200).json({
@@ -73,7 +88,6 @@ module.exports = {
         });
     },
 
-    //isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price,                                                                                                                                                                                                                     imageUrl, cookId, name, description
     createMovie: (req, res, next) => {
         logger.debug("createMovie aangeroepen");
         let cookId = req.userId;
@@ -82,7 +96,13 @@ module.exports = {
             `${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${price}, '${req.body.imageUrl}', ${cookId}, '${req.body.name}', '${req.body.description}'`
         );
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err;
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
+
             connection.query(
                 `INSERT INTO meal (isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description) VALUES (${req.body.isActive}, ${req.body.isVega}, ${req.body.isVegan}, ${req.body.isToTakeHome}, ${req.body.maxAmountOfParticipants}, ${req.body.price}, '${req.body.imageUrl}', ${cookId}, '${req.body.name}', '${req.body.description}');`,
                 function (error, results, fields) {
@@ -105,7 +125,6 @@ module.exports = {
         });
     },
 
-    //isActive, isVega, isVegan, isToTakeHome, maxAmountOfParticipants, price, imageUrl, cookId, name, description
     validateMovie: (req, res, next) => {
         const {
             isActive,
@@ -160,7 +179,6 @@ module.exports = {
         }
     },
 
-    // isActive, isVega, isVegan, isToTakeHome, dateTime, maxAmountOfParticipants,                                                                                                                                         price, imageUrl, cookId, name, description
     updateById: (req, res, next) => {
         const cookId = req.userId;
         let mealId = req.params.id;
@@ -168,7 +186,7 @@ module.exports = {
         dbconnection.getConnection(function (err, connection) {
             try {
                 connection.query(
-                    `UPDATE meal SET isActive = ${req.body.isActive}, isVega = ${req.body.isVega}, isVegan = ${req.body.isVegan}, isToTakeHome = ${req.body.isToTakeHome}, maxAmountOfParticipants = ${req.body.maxAmountOfParticipants}, price = ${req.body.price}, imageUrl = ${req.body.imageUrl}, cookId = ${cookId}, name = "${req.body.name}", description = "${req.body.description}" WHERE id = "${mealId}";`,
+                    `UPDATE meal SET isActive = ${req.body.isActive}, isVega = ${req.body.isVega}, isVegan = ${req.body.isVegan}, isToTakeHome = ${req.body.isToTakeHome}, maxAmountOfParticipants = ${req.body.maxAmountOfParticipants}, price = ${req.body.price}, imageUrl = ${req.body.imageUrl}, cookId = ${cookId}, name = '${req.body.name}', description = '${req.body.description}' WHERE id = ${mealId};`,
                     function (error, results, fields) {
                         connection.release();
 
@@ -197,12 +215,22 @@ module.exports = {
         let mealId = req.params.id;
         logger.debug("deleteById aangeroepen");
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err;
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
 
             connection.query(
                 `SELECT * FROM meal WHERE id = ${mealId};`,
                 function (error, results, fields) {
-                    if (results.length == 0) {
+                    if (error) {
+                        next({
+                            statusCode: 500,
+                            error: "server error",
+                        });
+                    } else if (results.length == 0) {
                         next({
                             statusCode: 404,
                             error: "meal not found",

@@ -8,6 +8,13 @@ module.exports = {
         logger.debug(`getPersonalProfile called`);
         const id = req.userId;
         dbconnection.getConnection(function (err, connection) {
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
+
             connection.query(
                 `SELECT * FROM user WHERE id = ${id};`,
                 function (error, results, fields) {
@@ -15,8 +22,6 @@ module.exports = {
 
                     if (results.length > 0) {
                         connection.release();
-
-                        if (error) throw error;
 
                         res.status(200).json({
                             statusCode: 200,
@@ -37,7 +42,6 @@ module.exports = {
         });
     },
 
-    // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     createUser: (req, res, next) => {
         logger.debug("createUser aangeroepen");
         dbconnection.getConnection(function (err, connection) {
@@ -46,7 +50,7 @@ module.exports = {
                 next({
                     statusCode: 500,
                     error: "server error",
-                })
+                });
             }
             connection.query(
                 `SELECT * from user WHERE emailAdress = '${req.body.emailAdress}';`,
@@ -71,7 +75,9 @@ module.exports = {
                         connection.query(
                             `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ('${req.body.firstName}', '${req.body.lastName}', ${req.body.isActive}, '${req.body.emailAdress}', '${req.body.password}', '${req.body.phoneNumber}', '${req.body.street}', '${req.body.city}');`,
                             function (er, results, fields) {
-                                logger.debug(`INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`)
+                                logger.debug(
+                                    `INSERT INTO user (firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city) VALUES ("${req.body.firstName}", "${req.body.lastName}", "${req.body.isActive}", "${req.body.emailAdress}", "${req.body.password}", "${req.body.phoneNumber}", "${req.body.street}", "${req.body.city}");`
+                                );
                                 connection.release();
 
                                 if (er) {
@@ -98,14 +104,24 @@ module.exports = {
         const userId = req.params.id;
         logger.debug(`User met ID ${userId} gezocht`);
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err;
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
 
             connection.query(
                 `SELECT * FROM user WHERE id = ${userId};`,
                 function (error, results, fields) {
                     connection.release();
 
-                    if (results.length == 0) {
+                    if (error) {
+                        next({
+                            statusCode: 500,
+                            error: "server error",
+                        });
+                    } else if (results.length == 0) {
                         next({
                             statusCode: 404,
                             error: "User ID does not exist",
@@ -144,7 +160,12 @@ module.exports = {
         logger.debug(queryString);
 
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err;
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
 
             try {
                 connection.query(
@@ -153,7 +174,12 @@ module.exports = {
                     function (error, results, fields) {
                         connection.release();
 
-                        if (error) next(error);
+                        if (error) {
+                            next({
+                                statusCode: 500,
+                                error: "server error",
+                            });
+                        }
 
                         logger.debug("#results = ", results.length);
                         res.status(200).json({
@@ -176,53 +202,43 @@ module.exports = {
         });
     },
 
-    // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     updateById: (req, res, next) => {
         let userId = req.params.id;
         let actualId = req.userId;
         logger.debug("updateById aangeroepen");
         dbconnection.getConnection(function (err, connection) {
-            if (err) throw err;
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
 
-            try {
-                if (userId == actualId) {
-                    connection.query(
-                        `UPDATE user SET firstName = '${req.body.firstName}', lastName = '${req.body.lastName}', isActive = ${req.body.isActive}, emailAdress = '${req.body.emailAdress}', password = '${req.body.password}', phoneNumber = '${req.body.phoneNumber}', street = '${req.body.street}', city = '${req.body.city}' WHERE id = ${userId};`,
-                        function (error, results, fields) {
-                            connection.release();
+            if (userId == actualId) {
+                connection.query(
+                    `UPDATE user SET firstName = '${req.body.firstName}', lastName = '${req.body.lastName}', isActive = ${req.body.isActive}, emailAdress = '${req.body.emailAdress}', password = '${req.body.password}', phoneNumber = '${req.body.phoneNumber}', street = '${req.body.street}', city = '${req.body.city}' WHERE id = ${userId};`,
+                    function (error, results, fields) {
+                        connection.release();
 
-                            if (error) {
-                                next({
-                                    statusCode: 500,
-                                    error: "server error",
-                                })
-                            }
-
-                            logger.debug(
-                                `updated user ${userId} successfully!`
-                            );
-                            res.status(200).json({
-                                statusCode: 200,
-                                results: results,
+                        if (error) {
+                            next({
+                                statusCode: 500,
+                                error: "server error",
                             });
                         }
-                    );
-                } else {
-                    next({
-                        statusCode: 401,
-                        error: "User is not the owner",
-                    });
-                }
-            } catch (err) {
-                logger.error(`Error message: ${err.message}`);
-                logger.error(`Error code: ${err.code}`);
 
-                const error = {
-                    statusCode: 400,
-                    error: err.message,
-                };
-
-                next(error);
+                        logger.debug(`updated user ${userId} successfully!`);
+                        res.status(200).json({
+                            statusCode: 200,
+                            results: results,
+                        });
+                    }
+                );
+            } else {
+                next({
+                    statusCode: 401,
+                    error: "User is not the owner",
+                });
             }
         });
     },
@@ -232,13 +248,24 @@ module.exports = {
         let actualId = req.userId;
         logger.debug("deleteById aangeroepen");
         dbconnection.getConnection(function (err, connection) {
-            if (err) next(err);
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
+
             connection.query(
                 `SELECT * FROM user WHERE id = ${userId}`,
                 function (error, results, fields) {
                     connection.release();
 
-                    if (results.length == 0) {
+                    if (error) {
+                        next({
+                            statusCode: 500,
+                            error: "server error",
+                        });
+                    } else if (results.length == 0) {
                         next({
                             statusCode: 404,
                             error: "User doesnt exist",
@@ -250,7 +277,12 @@ module.exports = {
                                 function (error, results, fields) {
                                     connection.release();
 
-                                    if (error) throw error;
+                                    if (error) {
+                                        next({
+                                            statusCode: 500,
+                                            error: "server error",
+                                        });
+                                    }
 
                                     logger.debug(
                                         `deleted user ${userId} successfully!`
@@ -273,7 +305,6 @@ module.exports = {
         });
     },
 
-    // id, firstName, lastName, isActive, emailAdress, password, phoneNumber, street, city
     validateUser: (req, res, next) => {
         logger.debug(req.body);
         const {
@@ -323,13 +354,13 @@ module.exports = {
         } catch (err) {
             logger.error(`Error message: ${err.message}`);
             logger.error(`Error code: ${err.code}`);
-            // zie de Express handleiding op https://expressjs.com/en/guide/error-handling.html
-            const error = {
-                statusCode: 400,
-                error: err.message,
-            };
 
-            next(error);
+            if (err) {
+                next({
+                    statusCode: 500,
+                    error: "server error",
+                });
+            }
         }
     },
 };

@@ -270,7 +270,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -294,7 +296,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -318,7 +322,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -342,7 +348,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -366,7 +374,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -390,7 +400,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -428,8 +440,10 @@ describe("Users", () => {
 
                     let { result, statusCode } = res.body;
 
-                    result.should.be.an("string");
                     statusCode.should.be.an("number");
+                    result.should.be
+                        .an("string")
+                        .that.contains("End-point not found");
 
                     done();
                 });
@@ -522,7 +536,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -546,7 +562,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -672,7 +690,9 @@ describe("Users", () => {
 
                     let { datetime, error } = res.body;
 
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
                     datetime.should.be.an("string");
 
                     done();
@@ -739,7 +759,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -783,7 +805,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -857,7 +881,9 @@ describe("Users", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });

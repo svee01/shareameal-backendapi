@@ -234,7 +234,9 @@ describe("Meals", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -275,7 +277,9 @@ describe("Meals", () => {
 
                     let { error, datetime } = res.body;
 
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
                     datetime.should.be.an("string");
 
                     done();
@@ -300,7 +304,9 @@ describe("Meals", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -364,7 +370,9 @@ describe("Meals", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -388,7 +396,9 @@ describe("Meals", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
@@ -412,7 +422,9 @@ describe("Meals", () => {
                     let { datetime, error } = res.body;
 
                     datetime.should.be.an("string");
-                    error.should.be.an("string");
+                    error.should.be
+                        .an("string")
+                        .that.contains("Not authorized");
 
                     done();
                 });
